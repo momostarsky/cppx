@@ -47,7 +47,7 @@ target_include_directories(cppx.unittest  PRIVATE ${PROJECT_SOURCE_DIR}/src )
 target_link_libraries(
         cppx.unittest
         gtest_main
-        cppx
+        Dicom.Native-linux64
 )
 
 add_test(

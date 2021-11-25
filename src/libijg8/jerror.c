@@ -23,7 +23,7 @@
 #include "jpeglib8.h"
 #include "jversion8.h"
 #include "jerror8.h"
-
+#include <stdlib.h>
 #ifdef USE_WINDOWS_MESSAGEBOX
 #include <windows.h>
 #endif

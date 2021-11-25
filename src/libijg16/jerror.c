@@ -23,6 +23,7 @@
 #include "jpeglib16.h"
 #include "jversion16.h"
 #include "jerror16.h"
+#include  <stdlib.h>
 
 #ifdef USE_WINDOWS_MESSAGEBOX
 #include <windows.h>
