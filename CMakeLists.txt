@@ -17,4 +17,4 @@ add_subdirectory(src)
 # CTest related
 enable_testing()
 add_subdirectory(tests)
-
+add_subdirectory(app)
