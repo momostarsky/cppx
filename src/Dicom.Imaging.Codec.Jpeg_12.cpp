@@ -18,9 +18,9 @@ extern "C" {
 #elif defined(__linux__)
 #define EXPORT_libijg12  extern
 extern "C" {
-#include "stdio.h"
-#include "string.h"
-#include "setjmp.h"
+#include <cstdio>
+#include <cstring>
+#include <csetjmp>
 #include "libijg12/jpeglib12.h"
 #include "libijg12/jerror12.h"
 #include "libijg12/jpegint12.h"

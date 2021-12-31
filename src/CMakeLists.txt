@@ -32,13 +32,7 @@ option (BUILD_SHARED_LIBS "Build CharLS with shared libraries." OFF)
 option (BUILD_TESTING     "Build tests"                         ON)
 
 
-SET(CROSSPLATFORM_SRCS
-  ${CMAKE_CURRENT_SOURCE_DIR}/Dicom.Imaging.Codec.JpegLS.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/Dicom.Imaging.Codec.Jpeg2000.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/Dicom.Imaging.Codec.Jpeg_8.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/Dicom.Imaging.Codec.Jpeg_12.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/Dicom.Imaging.Codec.Jpeg_16.cpp
-)
+
 
 #CharLS Library
 SET(CHARLS_SRCS
@@ -301,7 +295,29 @@ SET(OPENJPEG_SRCS
         OpenJPEG/openjpeg.h
 )
 
-add_library(Dicom.Native-linux64 SHARED ${CROSSPLATFORM_SRCS} ${OPENJPEG_SRCS} ${LIBIJG16_SRCS} ${LIBIJG12_SRCS} ${LIBIJG8_SRCS} ${CHARLS_SRCS})
+
+
+SET(CROSSPLATFORM_SRCS
+        Dicom.Imaging.Codec.JpegLS.cpp
+        Dicom.Imaging.Codec.Jpeg2000.cpp
+        Dicom.Imaging.Codec.Jpeg_8.cpp
+        Dicom.Imaging.Codec.Jpeg_12.cpp
+        Dicom.Imaging.Codec.Jpeg_16.cpp
+
+        include/Person.h
+        src/Person.cpp
+        impl/personImpl.cpp
+        impl/personImpl.h
+        src/DicomPrivateCreator.cpp
+        include/DicomPrivateCreator.h src/DicomTag.cpp include/DicomTag.h include/comm.h include/DicomDictionaryEntry.h src/DicomVM.cpp include/DicomVM.h src/DicomVR.cpp include/DicomVR.h src/comm.cpp src/DicomReader.cpp include/DicomReader.h src/DicomFileReader.cpp include/DicomFileReader.h)
+
+
+add_library(Dicom.Native-linux64 SHARED
+
+        ${OPENJPEG_SRCS} ${LIBIJG16_SRCS} ${LIBIJG12_SRCS} ${LIBIJG8_SRCS} ${CHARLS_SRCS}
+        ${CROSSPLATFORM_SRCS}
+
+)
 
 #Setting properties for shared o dynamic library 
 set_target_properties(Dicom.Native-linux64

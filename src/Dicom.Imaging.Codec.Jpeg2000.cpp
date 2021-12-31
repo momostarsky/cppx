@@ -22,7 +22,7 @@ extern "C"{
 extern "C"{
 #include "OpenJPEG/openjpeg.h"
 #include "OpenJPEG/j2k.h"
-#include <string.h>
+#include <cstring>
 }
 
 #elif defined(__APPLE__)

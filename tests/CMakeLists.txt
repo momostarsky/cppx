@@ -41,7 +41,7 @@ add_executable(
         cppx.unittest
         ${cppx_tests_include}
         ${cppx_tests_src}
-)
+        Unity_TagTest.cpp Unity_StringTest.cpp)
 
 target_include_directories(cppx.unittest  PRIVATE ${PROJECT_SOURCE_DIR}/src )
 target_link_libraries(
