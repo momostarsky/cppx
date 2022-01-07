@@ -110,3 +110,55 @@ void Split(const std::string &src, const std::vector<std::string> &separators, s
     }
 
 }
+
+
+void int4to_bytes(uint32_t num, char bytes[4] /*in array size must be 4*/) {
+    //turn integer to bytes array
+    bytes[0] = (char) num;
+    bytes[1] = (char) (num >> 8);
+    bytes[2] = (char) (num >> 16);
+    bytes[3] = (char) (num >> 24);
+}
+
+
+uint32_t bytesto_int4(const char bytes[4]) {
+    //https://blog.csdn.net/weixin_40583386/article/details/86152852
+    //turn bytes array to integer
+    uint32_t num = bytes[0] & 0xFF;
+    num |= ((bytes[1] << 8) & 0xFF00);
+    num |= ((bytes[2] << 16) & 0xFF0000);
+    num |= ((bytes[3] << 24) & 0xFF000000);
+    return num;
+}
+
+uint16_t bytesto_int2(const char bytes[2]) {
+    //https://blog.csdn.net/weixin_40583386/article/details/86152852
+    //turn bytes array to integer
+    uint16_t num = bytes[0] & 0xFF;
+    num |= ((bytes[1] << 8) & 0xFF00);
+    return num;
+}
+
+uint64_t bytesto_int8(const char bytes[8] /*size must be 8*/) {
+    //turn bytes array to integer
+    uint64_t num = bytes[0] & 0xFF;
+    num |= (((uint64_t) bytes[1] << 8) & 0xFF00);
+    num |= (((uint64_t) bytes[2] << 16) & 0xFF0000);
+    num |= (((uint64_t) bytes[3] << 24) & 0xFF000000);
+    num |= (((uint64_t) bytes[4] << 32) & 0xFF00000000);
+    num |= (((uint64_t) bytes[5] << 40) & 0xFF0000000000);
+    num |= (((uint64_t) bytes[6] << 48) & 0xFF000000000000);
+    num |= (((uint64_t) bytes[7] << 56) & 0xFF00000000000000);
+    return num;
+}
+
+void int8to_bytes(uint64_t num, char bytes[8] /*in array size must be 8*/) {
+    bytes[0] = (char) num;
+    bytes[1] = (char) (num >> 8);
+    bytes[2] = (char) (num >> 16);
+    bytes[3] = (char) (num >> 24);
+    bytes[4] = (char) (num >> 32);
+    bytes[5] = (char) (num >> 40);
+    bytes[6] = (char) (num >> 48);
+    bytes[7] = (char) (num >> 56);
+}

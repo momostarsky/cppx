@@ -7,23 +7,15 @@
 #include <utility>
 
 DicomTag::DicomTag(uint16_t group, uint16_t element) :
-        mGroup(group), mElement(element), mCreator(nullptr) {
+        mGroup(group), mElement(element){
 
 }
 
-DicomTag::DicomTag(uint16_t group, uint16_t element, std::string privateCreator) :
-        mGroup(group), mElement(element), mCreator(new DicomPrivateCreator(privateCreator)) {
+DicomTag::DicomTag(uint16_t group, uint16_t element, std::string& privateCreator) :
+        mGroup(group), mElement(element), mCreator( privateCreator ) {
 
 }
 
-DicomTag::DicomTag(uint16_t group, uint16_t element, DicomPrivateCreator &privateCreator) :
-        mGroup(group), mElement(element), mCreator(new DicomPrivateCreator(privateCreator)) {
-
-}
-
-DicomPrivateCreator *DicomTag::getPrivateCreator() const {
-    return mCreator;
-}
 
 
 DicomTag::operator uint32_t() const {
@@ -35,6 +27,14 @@ DicomTag::operator uint32_t() const {
 std::string DicomTag::toString() const {
     char text[14] = {0};
     char fmtStr[] = "0x%04X,0x%04X";
-    sprintf(text,fmtStr, mGroup, mElement);
+    sprintf(text, fmtStr, mGroup, mElement);
     return std::string{text};
+}
+
+DicomTag::DicomTag(const DicomTag &src) {
+
+    this->mGroup = src.mGroup;
+    this->mElement = src.mElement;
+    this->mCreator = src.mCreator;
+
 }

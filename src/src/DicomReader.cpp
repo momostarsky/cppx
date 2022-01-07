@@ -16,15 +16,12 @@ int DicomReader::Postion() const {
     return -1;
 }
 
-int DicomReader::Seek(const int positon,   SeekOnce seedOnce) {
-    return -1;
+bool DicomReader::Seek(const int positon, SeekOnce seedOnce) {
+    return false;
 }
 
-void DicomReader::Close() {
 
+
+bool DicomReader::Read(const char *buffer, size_t size) {
+    return false;
 }
-
-void DicomReader::Read(const char *buffer, int size, int offset) {
-
-}
-

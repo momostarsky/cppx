@@ -47,13 +47,14 @@ public:
        * @return
        */
 
-    virtual int Seek(int positon, SeekOnce seedOnce);
-
-    virtual void Close();
-
-    virtual void Read(const char *buffer, int size, int offset);
+    virtual bool Seek(int positon, SeekOnce seedOnce);
 
 
+
+    virtual  bool   Read(const char *buffer, size_t size ) ;
+
+
+    virtual  bool   Endof() =0;
 };
 
 

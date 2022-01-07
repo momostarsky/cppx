@@ -106,4 +106,16 @@ void StringTrimStartEnd(std::string &strBase, std::string &strDest);
 void Split(const std::string &src, const std::vector<std::string> &separators, std::vector<std::string> &dest);
 
 
+
+void int4to_bytes(uint32_t num, char bytes[4] /*in array size must be 4*/)  ;
+
+uint32_t bytesto_int4(const char bytes[4])  ;
+
+uint16_t bytesto_int2(const char bytes[2])  ;
+
+uint64_t bytesto_int8(const char bytes[8] /*size must be 8*/) ;
+
+void int8to_bytes(uint64_t num, char bytes[8] /*in array size must be 8*/)  ;
+
+
 #endif //CPPX_COMM_H

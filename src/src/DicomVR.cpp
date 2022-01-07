@@ -560,10 +560,40 @@ DicomVR &DicomVR::ParseVR(std::string &tagStr) {
 }
 
 bool DicomVR::operator==(const DicomVR &other) const {
-    DicomVRCode cd = this->Code;
-    DicomVRCode c2 = other.Code;
-    return cd == c2 && this->IsMultiValue == other.IsMultiValue
-           && this->Name == other.Name;
+
+    return     this->Name == other.Name;
+}
+
+bool DicomVR::ElementWithFixedFormat(DicomVR &vr) {
+
+    //AE, AS, AT, CS, DA, DS, DT, FL, FD, IS, LO, LT, PN, SH, SL, SS, ST, TM, UI, UL and US
+    if (   vr.Name == DicomVR::AE.Name
+        || vr.Name == DicomVR::AS.Name
+        || vr.Name == DicomVR::AT.Name
+        || vr.Name == DicomVR::CS.Name
+        || vr.Name == DicomVR::DA.Name
+        || vr.Name == DicomVR::DS.Name
+        || vr.Name == DicomVR::DT.Name
+        || vr.Name == DicomVR::FL.Name
+        || vr.Name == DicomVR::FD.Name
+        || vr.Name == DicomVR::IS.Name
+        || vr.Name == DicomVR::LO.Name
+        || vr.Name == DicomVR::LT.Name
+        || vr.Name == DicomVR::PN.Name
+        || vr.Name == DicomVR::SH.Name
+        || vr.Name == DicomVR::SL.Name
+        || vr.Name == DicomVR::SS.Name
+        || vr.Name == DicomVR::ST.Name
+        || vr.Name == DicomVR::TM.Name
+        || vr.Name == DicomVR::UI.Name
+        || vr.Name == DicomVR::UL.Name
+        || vr.Name == DicomVR::US.Name
+
+    )  {
+        return true;
+    }
+
+    return false;
 }
 
 //DicomVR::DicomVR(DicomVR &&src) noexcept {

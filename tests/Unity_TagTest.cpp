@@ -104,7 +104,7 @@ namespace {
         DicomTag t2(group, element, name);
         ASSERT_EQ(t2.Group(), group);
         ASSERT_EQ(t2.Element(), element);
-        ASSERT_EQ(t2.getPrivateCreator()->getCreator(), name);
+        ASSERT_EQ(t2.Creator(), name);
         ASSERT_EQ(t2.IsOdd(), false);
         uint32_t tagId(t2);
         ASSERT_EQ(tagId, 0x00080002);

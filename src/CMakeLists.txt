@@ -308,8 +308,7 @@ SET(CROSSPLATFORM_SRCS
         src/Person.cpp
         impl/personImpl.cpp
         impl/personImpl.h
-        src/DicomPrivateCreator.cpp
-        include/DicomPrivateCreator.h src/DicomTag.cpp include/DicomTag.h include/comm.h include/DicomDictionaryEntry.h src/DicomVM.cpp include/DicomVM.h src/DicomVR.cpp include/DicomVR.h src/comm.cpp src/DicomReader.cpp include/DicomReader.h src/DicomFileReader.cpp include/DicomFileReader.h)
+        src/DicomTag.cpp include/DicomTag.h include/comm.h include/DicomDictionaryEntry.h src/DicomVM.cpp include/DicomVM.h src/DicomVR.cpp include/DicomVR.h src/comm.cpp src/DicomReader.cpp include/DicomReader.h src/DicomFileReader.cpp include/DicomFileReader.h src/DataSet.cpp include/DataSet.h include/OutOfException.h src/DicomHeaderParser.cpp include/DicomHeaderParser.h src/DicomItem.cpp include/DicomItem.h src/ExppiciteVrLittleEndianReader.cpp include/ExppiciteVrLittleEndianReader.h)
 
 
 add_library(Dicom.Native-linux64 SHARED

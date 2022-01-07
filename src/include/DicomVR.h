@@ -68,6 +68,15 @@ public:
     static DicomVR OV;
 
     static DicomVR &ParseVR(std::string &tagStr);
+
+    /***
+     * https://dicom.nema.org/medical/dicom/current/output/html/part05.html#table_7.1-2
+     * Data Element with Explicit VR of AE, AS, AT, CS, DA, DS, DT, FL, FD, IS, LO, LT, PN, SH, SL, SS, ST, TM, UI, UL and US
+     * VR 为固定字节
+     * @param vr
+     * @return
+     */
+    static bool  ElementWithFixedFormat(DicomVR &vr);
 };
 
 const uint8_t PadSpace = 0x20;

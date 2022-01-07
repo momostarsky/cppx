@@ -6,37 +6,38 @@
 #define CPPX_DICOMTAG_H
 
 #include "comm.h"
-#include "DicomPrivateCreator.h"
+
 
 class DicomTag {
 public:
 
     DicomTag(uint16_t group, uint16_t element);
 
-    DicomTag(uint16_t group, uint16_t element, std::string privateCreator);
+    DicomTag(uint16_t group, uint16_t element, std::string &privateCreator);
 
-    DicomTag(uint16_t group, uint16_t element, DicomPrivateCreator &privateCreator);
 
     explicit   operator uint32_t() const;
 
-    DicomTag(const DicomTag &) = delete;
+    DicomTag(const DicomTag &);
 
     DicomTag operator=(const DicomTag &) = delete;
 
-    DicomPrivateCreator *getPrivateCreator() const;
 
     uint16_t Group() const { return mGroup; }
 
     uint16_t Element() const { return mElement; }
 
+    std::string Creator() const { return mCreator; }
+
     bool IsOdd() const { return (mGroup & 1) == 1; }
 
     std::string toString() const;
 
+
 private:
     uint16_t mGroup;
     uint16_t mElement;
-    DicomPrivateCreator *mCreator;
+    std::string mCreator;
 
 
 };
