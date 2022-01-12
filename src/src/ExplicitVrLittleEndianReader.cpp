@@ -64,7 +64,7 @@ parseValueFieldWithUndefinedLength(FILE *reader, DicomItem *ite) {///NOLINT
             //Sequence Delimitation Item
             size_t sk = fread(skip4, 1, 4, reader);
             assert(sk == 4);
-            DicomItem dicomItem(0xFFFE, 0xE0DD, DicomVR::NONE, 4, ite->getDepth() + 1);
+            DicomItem dicomItem(0xFFFE, 0xE0DD, *pVR_NONE, 4, ite->getDepth() + 1);
             ite->addSubItem(dicomItem);
 //            std::cout << "--" << dicomItem.toString() << std::endl;
             break;
@@ -79,10 +79,10 @@ parseValueFieldWithUndefinedLength(FILE *reader, DicomItem *ite) {///NOLINT
 //            size_t lr = fread(&itemData[0], 1, x, reader);
 //            assert(lr == x);
 
-            DicomItem dicomItem(0xFFFE, 0xE000, DicomVR::NONE, x, ite->getDepth() + 1);
+            DicomItem dicomItem(0xFFFE, 0xE000, *pVR_NONE, x, ite->getDepth() + 1);
             dicomItem.ReadData(reader);
 
-            if (ite->getVr() == DicomVR::SQ) {
+            if (ite->getVr() == *pVR_SQ) {
                 parseSubs(&dicomItem);
             }
             ite->addSubItem(dicomItem);
@@ -133,17 +133,17 @@ ExplicitVrLittleEndianReader::ReadDataset(std::list<DicomItem> &items, uint32_t 
         assert(vrL == 2);
 
         std::string vrstr(vr);
-        DicomVR tagVr = DicomVR::ParseVR(vrstr);
-        if (tagVr == DicomVR::NONE) {
+        const DicomVR* tagVr = DicomVR::ParseVR(vrstr);
+        if (tagVr == pVR_NONE) {
             break;
         }
 
         DicomItem *ptr = nullptr;
-        if (DicomVR::ElementWithFixedFormat(tagVr)) {
+        if (DicomVR::ElementWithFixedFormat(*tagVr)) {
             size_t vrx = fread(vl2, 1, 2, mReader);
             assert(vrx == 2);
             valueLength = bytesto_int2(vl2);
-            ptr = new DicomItem(groupId, elementId, tagVr, valueLength, depath);
+            ptr = new DicomItem(groupId, elementId, *tagVr, valueLength, depath);
             if (valueLength == 0xFFFFFFFF) {
                 break;
             }
@@ -158,13 +158,13 @@ ExplicitVrLittleEndianReader::ReadDataset(std::list<DicomItem> &items, uint32_t 
             size_t vrx = fread(vl4, 1, 4, mReader);
             assert(vrx == 4);
             valueLength = bytesto_int4(vl4);
-            ptr = new DicomItem(groupId, elementId, tagVr, valueLength, depath);
+            ptr = new DicomItem(groupId, elementId, *tagVr, valueLength, depath);
             if (valueLength == 0xFFFFFFFF) {
                 //Value Field has an Undefined Length and a Sequence Delimitation Item marks the end of the Value Field.
                 parseValueFieldWithUndefinedLength(mReader, ptr);
             } else {
                 ptr->ReadData(mReader);
-                if (tagVr == DicomVR::SQ) {
+                if (tagVr ==  pVR_SQ) {
                     parseSubs(ptr);
                 }
             }

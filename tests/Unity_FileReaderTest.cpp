@@ -87,13 +87,13 @@ namespace {
         char prn[100]{0};
         for (const auto &it: items) {
 
-            if (it.getVr() == DicomVR::UL) {
+            if (it.getVr() == *pVR_UL) {
 
                 uint32_t vl = bytesto_int4(it.getData());
                 snprintf(prn, 100, "0x%04hX,0x%04hX, VLen=%d, Value=%d", it.getTag()->Group(), it.getTag()->Element(),
                          it.getValueLength(), vl);
 
-            } else if (it.getVr() == DicomVR::OB) {
+            } else if (it.getVr() == *pVR_OB) {
                 snprintf(prn, 100, "0x%04hX,0x%04hX, VLen=%d, Value=%d,%d", it.getTag()->Group(),
                          it.getTag()->Element(),
                          it.getValueLength(), it.getData()[0], it.getData()[1]);

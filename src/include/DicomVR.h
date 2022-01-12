@@ -23,12 +23,12 @@ public:
 
     bool operator==(const DicomVR &other) const;
 
-    DicomVR &operator=(const DicomVR &src);
 
     DicomVR() = default;
 
     DicomVR(const DicomVR &src) = default;
 
+    DicomVR &operator=(const DicomVR &src)  ;
 
     DicomVR(DicomVR &&src) = default;
 
@@ -40,44 +40,10 @@ public:
 //
 //    DicomVR(DicomVR &&src) noexcept;
 
-public:
-    static DicomVR NONE;
-    static DicomVR AE;
-    static DicomVR AS;
-    static DicomVR AT;
-    static DicomVR CS;
-    static DicomVR DA;
-    static DicomVR DS;
-    static DicomVR DT;
-    static DicomVR FD;
-    static DicomVR FL;
-    static DicomVR IS;
-    static DicomVR LO;
-    static DicomVR LT;
-    static DicomVR OB;
-    static DicomVR OD;
-    static DicomVR OF;
-    static DicomVR OL;
-    static DicomVR OW;
-    static DicomVR UV;
-    static DicomVR UT;
-    static DicomVR US;
-    static DicomVR UR;
-    static DicomVR UN;
-    static DicomVR UL;
-    static DicomVR UI;
-    static DicomVR UC;
-    static DicomVR TM;
-    static DicomVR SV;
-    static DicomVR ST;
-    static DicomVR SS;
-    static DicomVR SQ;
-    static DicomVR SL;
-    static DicomVR SH;
-    static DicomVR PN;
-    static DicomVR OV;
 
-    static DicomVR &ParseVR(std::string &tagStr);
+
+
+    static const   DicomVR * ParseVR(std::string &tagStr);
 
     /***
      * https://dicom.nema.org/medical/dicom/current/output/html/part05.html#table_7.1-2
@@ -86,11 +52,47 @@ public:
      * @param vr
      * @return
      */
-    static bool ElementWithFixedFormat(DicomVR &vr);
+    static bool ElementWithFixedFormat(const DicomVR &vr);
 };
 
 const uint8_t PadSpace = 0x20;
 const uint8_t PadZero = 0x00;
+
+extern const DicomVR *pVR_NONE;
+extern const DicomVR *pVR_AE;
+extern const DicomVR *pVR_AS;
+extern const DicomVR *pVR_AT;
+extern const DicomVR *pVR_CS;
+extern const DicomVR *pVR_DA;
+extern const DicomVR *pVR_DS;
+extern const DicomVR *pVR_DT;
+extern const DicomVR *pVR_FD;
+extern const DicomVR *pVR_FL;
+extern const DicomVR *pVR_IS;
+extern const DicomVR *pVR_LO;
+extern const DicomVR *pVR_LT;
+extern const DicomVR *pVR_OB;
+extern const DicomVR *pVR_OD;
+extern const DicomVR *pVR_OF;
+extern const DicomVR *pVR_OL;
+extern const DicomVR *pVR_OW;
+extern const DicomVR *pVR_UV;
+extern const DicomVR *pVR_UT;
+extern const DicomVR *pVR_US;
+extern const DicomVR *pVR_UR;
+extern const DicomVR *pVR_UN;
+extern const DicomVR *pVR_UL;
+extern const DicomVR *pVR_UI;
+extern const DicomVR *pVR_UC;
+extern const DicomVR *pVR_TM;
+extern const DicomVR *pVR_SV;
+extern const DicomVR *pVR_ST;
+extern const DicomVR *pVR_SS;
+extern const DicomVR *pVR_SQ;
+extern const DicomVR *pVR_SL;
+extern const DicomVR *pVR_SH;
+extern const DicomVR *pVR_PN;
+extern const DicomVR *pVR_OV;
 
 
 #endif //CPPX_DICOMVR_H

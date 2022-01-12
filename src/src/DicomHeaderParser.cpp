@@ -46,11 +46,11 @@ void DicomHeaderParser::Parser(FILE *fd, std::list<DicomItem> &metaInfo) {
         rsb = fread(vr, 1, 2, fd);
         assert(rsb == 2);
 
-        DicomVR tagVr = DicomVR::NONE;
+        const  DicomVR* tagVr = pVR_NONE;
         elementId = bytesto_int2(elem);
         if (elementId == 0x0000) {
             // FileMetaInformation Length
-            tagVr = DicomVR::UL;
+            tagVr =  pVR_UL;
 
             rsb = fread(vl2, 1, 2, fd);
             assert(rsb == 2);
@@ -58,7 +58,7 @@ void DicomHeaderParser::Parser(FILE *fd, std::list<DicomItem> &metaInfo) {
             assert(valueLength == 4);
         } else if (elementId == 0x0001) {
             // FileMetaInformation Version
-            tagVr = DicomVR::OB;
+            tagVr = pVR_OB;//
             rsb = fread(skip2, 1, 2, fd);
             assert(rsb == 2);
             rsb = fread(vl4, 1, 4, fd);
@@ -67,13 +67,13 @@ void DicomHeaderParser::Parser(FILE *fd, std::list<DicomItem> &metaInfo) {
             assert(valueLength == 2);
         } else {
             std::string tagStr(vr);
-            tagVr = DicomVR::ParseVR(tagStr);
-            if (DicomVR::ElementWithFixedFormat(tagVr)) {
+            tagVr =  DicomVR::ParseVR(tagStr);
+            if (DicomVR::ElementWithFixedFormat(*tagVr)) {
                 rsb = fread(vl2, 1, 2, fd);
                 assert(rsb == 2);
                 valueLength = bytesto_int2(vl2);
             } else {
-                if (tagVr.Is16bitLength) {
+                if (tagVr->Is16bitLength) {
                     rsb = fread(vl2, 1, 2, fd);
                     assert(rsb == 2);
                     valueLength = bytesto_int2(vl2);
@@ -99,7 +99,7 @@ void DicomHeaderParser::Parser(FILE *fd, std::list<DicomItem> &metaInfo) {
 //            }
 //        }
 
-        DicomItem ite(grupId, elementId, tagVr, valueLength);
+        DicomItem ite(grupId, elementId, *tagVr, valueLength);
         if(valueLength >0){
 
             ite.ReadData(fd);

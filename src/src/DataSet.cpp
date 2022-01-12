@@ -111,11 +111,11 @@ void DataSet::Parse(DicomTag &stopTag) {
         }
         pReader.Read(vr, 2);
         std::string vrstr(vr);
-        DicomVR tagVr = DicomVR::ParseVR(vrstr);
-        if (tagVr == DicomVR::NONE) {
+        const DicomVR* tagVr = DicomVR::ParseVR(vrstr);
+        if (tagVr == pVR_NONE) {
             throw OutOfException("TagVR 解析错误");
         }
-        if (tagVr == DicomVR::SQ) {
+        if (tagVr == pVR_SQ ) {
             std::cout << "SQ";
             pReader.Seek(2, SeekOnce::Current);
             char vl[4];
@@ -129,12 +129,12 @@ void DataSet::Parse(DicomTag &stopTag) {
             }
         } else {
 
-            if (DicomVR::ElementWithFixedFormat(tagVr)) {
+            if (DicomVR::ElementWithFixedFormat(*tagVr)) {
                 uint16_t tagV = 0;
                 pReader.Read(reinterpret_cast<const char *>(&tagV), 2);
                 valueLength = tagV;
             } else {
-                if (tagVr.Is16bitLength) {
+                if (tagVr->Is16bitLength) {
                     uint16_t tagV = 0;
                     pReader.Read(reinterpret_cast<const char *>(&tagV), 2);
                     valueLength = tagV;
