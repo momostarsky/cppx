@@ -9,7 +9,7 @@
 #include "include/DicomFileReader.h"
 #include "include/DataSet.h"
 #include "include/DicomHeaderParser.h"
-#include "include/ExppiciteVrLittleEndianReader.h"
+#include "include/ExplicitVrLittleEndianReader.h"
 
 namespace {
 
@@ -108,7 +108,7 @@ namespace {
         }
 
 
-        ExppiciteVrLittleEndianReader dr(fd);
+        ExplicitVrLittleEndianReader dr(fd);
         std::list<DicomItem> dataSet;
         dr.ReadDataset(dataSet);
 

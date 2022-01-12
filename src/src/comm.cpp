@@ -5,44 +5,41 @@
 #include <regex>
 #include "../include/comm.h"
 
-
-DicomVRCode  DicomVRCode::AE("AE");///NOLINT
-DicomVRCode  DicomVRCode::AS("AS");///NOLINT
-DicomVRCode  DicomVRCode::AT("AT");///NOLINT
-DicomVRCode  DicomVRCode::CS("CS");///NOLINT
-DicomVRCode  DicomVRCode::DA("DA");///NOLINT
-DicomVRCode  DicomVRCode::DS("DS");///NOLINT
-DicomVRCode  DicomVRCode::DT("DT");///NOLINT
-DicomVRCode  DicomVRCode::FD("FD");///NOLINT
-DicomVRCode  DicomVRCode::FL("FL");///NOLINT
-DicomVRCode  DicomVRCode::IS("IS");///NOLINT
-DicomVRCode  DicomVRCode::LO("LO");///NOLINT
-DicomVRCode  DicomVRCode::LT("LT");///NOLINT
-DicomVRCode  DicomVRCode::OB("OB");///NOLINT
-DicomVRCode  DicomVRCode::OD("OD");///NOLINT
-DicomVRCode  DicomVRCode::OF("OF");///NOLINT
-DicomVRCode  DicomVRCode::OL("OL");///NOLINT
-DicomVRCode  DicomVRCode::OV("OV");///NOLINT
-DicomVRCode  DicomVRCode::OW("OW");///NOLINT
-DicomVRCode  DicomVRCode::PN("PN");///NOLINT
-DicomVRCode  DicomVRCode::SH("SH");///NOLINT
-DicomVRCode  DicomVRCode::SL("SL");///NOLINT
-DicomVRCode  DicomVRCode::SQ("SQ");///NOLINT
-DicomVRCode  DicomVRCode::SS("SS");///NOLINT
-DicomVRCode  DicomVRCode::ST("ST");///NOLINT
-DicomVRCode  DicomVRCode::SV("SV");///NOLINT
-DicomVRCode  DicomVRCode::TM("TM");///NOLINT
-DicomVRCode  DicomVRCode::UC("UC");///NOLINT
-DicomVRCode  DicomVRCode::UI("UI");///NOLINT
-DicomVRCode  DicomVRCode::UL("UL");///NOLINT
-DicomVRCode  DicomVRCode::UN("UN");///NOLINT
-DicomVRCode  DicomVRCode::UR("UR");///NOLINT
-DicomVRCode  DicomVRCode::US("US");///NOLINT
-DicomVRCode  DicomVRCode::UT("UT");///NOLINT
-DicomVRCode  DicomVRCode::UV("UV");///NOLINT
-DicomVRCode  DicomVRCode::NONE("NONE");///NOLINT
-
-
+const char * const DicomVR_AE = "AE";
+const char * const DicomVR_AS = "AS";
+const char * const DicomVR_AT = "AT";
+const char * const DicomVR_CS = "CS";
+const char * const DicomVR_DA = "DA";
+const char * const DicomVR_DS = "DS";
+const char * const DicomVR_DT = "DT";
+const char * const DicomVR_FD = "FD";
+const char * const DicomVR_FL = "FL";
+const char * const DicomVR_IS = "IS";
+const char * const DicomVR_LO = "LO";
+const char * const DicomVR_LT = "LT";
+const char * const DicomVR_OB = "OB";
+const char * const DicomVR_OD = "OD";
+const char * const DicomVR_OF = "OF";
+const char * const DicomVR_OL = "OL";
+const char * const DicomVR_OV = "OV";
+const char * const DicomVR_OW = "OW";
+const char * const DicomVR_PN = "PN";
+const char * const DicomVR_SH = "SH";
+const char * const DicomVR_SL = "SL";
+const char * const DicomVR_SQ = "SQ";
+const char * const DicomVR_SS = "SS";
+const char * const DicomVR_ST = "ST";
+const char * const DicomVR_SV = "SV";
+const char * const DicomVR_TM = "TM";
+const char * const DicomVR_UC = "UC";
+const char * const DicomVR_UI = "UI";
+const char * const DicomVR_UL = "UL";
+const char * const DicomVR_UN = "UN";
+const char * const DicomVR_UR = "UR";
+const char * const DicomVR_US = "US";
+const char * const DicomVR_UT = "UT";
+const char * const DicomVR_UV = "UV";
+const char * const DicomVR_NONE = "NONE";
 
 void StringTrimStartEnd(std::string &strBase, std::string &strDest) {
 

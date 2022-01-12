@@ -5,7 +5,7 @@
 #ifndef CPPX_DICOMITEM_H
 #define CPPX_DICOMITEM_H
 
-
+#include <list>
 #include "DicomTag.h"
 #include "DicomVR.h"
 
@@ -13,7 +13,8 @@ class DicomItem {
 
 public:
 
-    DicomItem(uint16_t groupId, uint16_t elementId, DicomVR vr, uint32_t valueLength, const char *dataBuffer = nullptr);
+    DicomItem(uint16_t groupId, uint16_t elementId, DicomVR vr, uint32_t valueLength, uint32_t depth = 1,
+              const char *dataBuffer = nullptr);
 
     DicomItem(const DicomItem &other);
 
@@ -42,7 +43,23 @@ public:
 
     const char *getData() const {
 
-        return mValueBuffer ;
+        return mValueBuffer;
+    }
+
+    uint32_t getDepth() const {
+        return mDepth;
+    }
+
+    void setDepth(uint32_t depth) {
+        mDepth = depth;
+    }
+
+    void addSubItem(const DicomItem &item) {
+        mSubs.push_back(item);
+    }
+
+    std::list<DicomItem> Subs() const {
+        return  mSubs ;
     }
 
 protected:
@@ -50,6 +67,9 @@ protected:
     DicomVR mVr;
     uint32_t mValueLength;
     char *mValueBuffer;
+    uint32_t mDepth;
+    std::list<DicomItem> mSubs;
+
 
 };
 

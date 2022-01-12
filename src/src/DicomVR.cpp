@@ -5,7 +5,7 @@
 #include "../include/DicomVR.h"
 
 DicomVR   DicomVR::NONE = DicomVR{ ///NOLINT
-        .Code = DicomVRCode::NONE,
+        .Code = DicomVR_NONE,
         .Name = "No Value Representation",
         .IsString = false,
         .IsStringEncoded = false,
@@ -18,7 +18,7 @@ DicomVR   DicomVR::NONE = DicomVR{ ///NOLINT
 };
 
 DicomVR  DicomVR::AE = DicomVR{///NOLINT
-        .Code =  DicomVRCode::AE,
+        .Code =DicomVR_AE,
         .Name ="Application Entity",
         .IsString = true,
         .IsStringEncoded =false,
@@ -31,7 +31,7 @@ DicomVR  DicomVR::AE = DicomVR{///NOLINT
 };
 
 DicomVR DicomVR::AS = DicomVR{///NOLINT
-        .Code = DicomVRCode::AS,
+        .Code =DicomVR_AS,
         .Name = "Age String",
         .IsString = true,
         .IsStringEncoded = false,
@@ -44,7 +44,7 @@ DicomVR DicomVR::AS = DicomVR{///NOLINT
 };
 
 DicomVR DicomVR::AT = DicomVR{///NOLINT
-        .Code = DicomVRCode::AT,
+        .Code =DicomVR_AT,
         .Name = "Attribute Tag",
         .IsString = false,
         .IsStringEncoded = false,
@@ -57,7 +57,7 @@ DicomVR DicomVR::AT = DicomVR{///NOLINT
 };
 
 DicomVR DicomVR::CS = DicomVR{///NOLINT
-        .Code = DicomVRCode::CS,
+        .Code =DicomVR_CS,
         .Name = "Code String",
         .IsString = true,
         .IsStringEncoded = false,
@@ -70,7 +70,7 @@ DicomVR DicomVR::CS = DicomVR{///NOLINT
 };
 
 DicomVR DicomVR::DA = DicomVR{///NOLINT
-        .Code = DicomVRCode::DA,
+        .Code =DicomVR_DA,
         .Name = "Date",
         .IsString = true,
         .IsStringEncoded = false,
@@ -83,7 +83,7 @@ DicomVR DicomVR::DA = DicomVR{///NOLINT
 };
 
 DicomVR DicomVR::DS = DicomVR{///NOLINT
-        .Code = DicomVRCode::DS,
+        .Code =DicomVR_DS,
         .Name = "Decimal String",
         .IsString = true,
         .IsStringEncoded = false,
@@ -96,7 +96,7 @@ DicomVR DicomVR::DS = DicomVR{///NOLINT
 };
 
 DicomVR DicomVR::DT = DicomVR{ ///NOLINT
-        .Code = DicomVRCode::DT,
+        .Code =DicomVR_DT,
         .Name = "Date Time",
         .IsString = true,
         .IsStringEncoded = false,
@@ -109,7 +109,7 @@ DicomVR DicomVR::DT = DicomVR{ ///NOLINT
 };
 
 DicomVR DicomVR::FD = DicomVR{ ///NOLINT
-        .Code = DicomVRCode::FD,
+        .Code =DicomVR_FD,
         .Name = "Floating Point Double",
         .IsString = false,
         .IsStringEncoded = false,
@@ -122,7 +122,7 @@ DicomVR DicomVR::FD = DicomVR{ ///NOLINT
 };
 
 DicomVR DicomVR::FL = DicomVR{ ///NOLINT
-        .Code = DicomVRCode::FL,
+        .Code =DicomVR_FL,
         .Name = "Floating Point Single",
         .IsString = false,
         .IsStringEncoded = false,
@@ -135,7 +135,7 @@ DicomVR DicomVR::FL = DicomVR{ ///NOLINT
 };
 
 DicomVR DicomVR::IS = DicomVR{ ///NOLINT
-        .Code = DicomVRCode::IS,
+        .Code =DicomVR_IS,
         .Name = "Integer String",
         .IsString = true,
         .IsStringEncoded = false,
@@ -148,7 +148,7 @@ DicomVR DicomVR::IS = DicomVR{ ///NOLINT
 };
 
 DicomVR DicomVR::LO = DicomVR{ ///NOLINT
-        .Code = DicomVRCode::LO,
+        .Code =DicomVR_LO,
         .Name = "Long String",
         .IsString = true,
         .IsStringEncoded = true,
@@ -161,7 +161,7 @@ DicomVR DicomVR::LO = DicomVR{ ///NOLINT
 };
 
 DicomVR DicomVR::LT = DicomVR{ ///NOLINT
-        .Code = DicomVRCode::LT,
+        .Code =DicomVR_LT,
         .Name = "Long Text",
         .IsString = true,
         .IsStringEncoded = true,
@@ -175,7 +175,7 @@ DicomVR DicomVR::LT = DicomVR{ ///NOLINT
 
 
 DicomVR DicomVR::OB = DicomVR{ ///NOLINT
-        .Code = DicomVRCode::OB,
+        .Code =DicomVR_OB,
         .Name = "Other Byte",
         .IsString = false,
         .IsStringEncoded = false,
@@ -188,7 +188,7 @@ DicomVR DicomVR::OB = DicomVR{ ///NOLINT
 };
 
 DicomVR DicomVR::OD = DicomVR{ ///NOLINT
-        .Code = DicomVRCode::OD,
+        .Code =DicomVR_OD,
         .Name = "Other Double",
         .IsString = false,
         .IsStringEncoded = false,
@@ -202,7 +202,7 @@ DicomVR DicomVR::OD = DicomVR{ ///NOLINT
 
 /// <summary>Other Float</summary>
 DicomVR DicomVR::OF = DicomVR{ ///NOLINT
-        .Code = DicomVRCode::OF,
+        .Code =DicomVR_OF,
         .Name = "Other Float",
         .IsString = false,
         .IsStringEncoded = false,
@@ -218,7 +218,7 @@ DicomVR DicomVR::OF = DicomVR{ ///NOLINT
 
 /// <summary>Other Long</summary>
 DicomVR DicomVR::OL = DicomVR{ ///NOLINT
-        .Code = DicomVRCode::OL,
+        .Code =DicomVR_OL,
         .Name = "Other Long",
         .IsString = false,
         .IsStringEncoded = false,
@@ -232,7 +232,7 @@ DicomVR DicomVR::OL = DicomVR{ ///NOLINT
 
 /// <summary>Other Word</summary>
 DicomVR DicomVR::OW = DicomVR{ ///NOLINT
-        .Code = DicomVRCode::OW,
+        .Code =DicomVR_OW,
         .Name = "Other Word",
         .IsString = false,
         .IsStringEncoded = false,
@@ -246,7 +246,7 @@ DicomVR DicomVR::OW = DicomVR{ ///NOLINT
 
 /// <summary>Other Very Long</summary>
 DicomVR DicomVR::OV = DicomVR{ ///NOLINT
-        .Code = DicomVRCode::OV,
+        .Code =DicomVR_OV,
         .Name = "Other Very Long",
         .IsString = false,
         .IsStringEncoded = false,
@@ -260,7 +260,7 @@ DicomVR DicomVR::OV = DicomVR{ ///NOLINT
 
 /// <summary>Person Name</summary>
 DicomVR DicomVR::PN = DicomVR{ ///NOLINT
-        .Code = DicomVRCode::PN,
+        .Code =DicomVR_PN,
         .Name = "Person Name",
         .IsString = true,
         .IsStringEncoded = true,
@@ -274,7 +274,7 @@ DicomVR DicomVR::PN = DicomVR{ ///NOLINT
 
 /// <summary>Short String</summary>
 DicomVR DicomVR::SH = DicomVR{ ///NOLINT
-        .Code = DicomVRCode::SH,
+        .Code =DicomVR_SH,
         .Name = "Short String",
         .IsString = true,
         .IsStringEncoded = true,
@@ -288,7 +288,7 @@ DicomVR DicomVR::SH = DicomVR{ ///NOLINT
 
 /// <summary>Signed Long</summary>
 DicomVR DicomVR::SL = DicomVR{ ///NOLINT
-        .Code = DicomVRCode::SL,
+        .Code =DicomVR_SL,
         .Name = "Signed Long",
         .IsString = false,
         .IsStringEncoded = false,
@@ -302,7 +302,7 @@ DicomVR DicomVR::SL = DicomVR{ ///NOLINT
 
 /// <summary>Sequence of Items</summary>
 DicomVR DicomVR::SQ = DicomVR{ ///NOLINT
-        .Code = DicomVRCode::SQ,
+        .Code =DicomVR_SQ,
         .Name = "Sequence of Items",
         .IsString = false,
         .IsStringEncoded = false,
@@ -317,7 +317,7 @@ DicomVR DicomVR::SQ = DicomVR{ ///NOLINT
 
 /// <summary>Signed Short</summary>
 DicomVR DicomVR::SS = DicomVR{ ///NOLINT
-        .Code = DicomVRCode::SS,
+        .Code =DicomVR_SS,
         .Name = "Signed Short",
         .IsString = false,
         .IsStringEncoded = false,
@@ -331,7 +331,7 @@ DicomVR DicomVR::SS = DicomVR{ ///NOLINT
 
 /// <summary>Short Text</summary>
 DicomVR DicomVR::ST = DicomVR{ ///NOLINT
-        .Code = DicomVRCode::ST,
+        .Code =DicomVR_ST,
         .Name = "Short Text",
         .IsString = true,
         .IsStringEncoded = true,
@@ -345,7 +345,7 @@ DicomVR DicomVR::ST = DicomVR{ ///NOLINT
 
 /// <summary>Signed Very Long</summary>
 DicomVR DicomVR::SV = DicomVR{ ///NOLINT
-        .Code = DicomVRCode::SV,
+        .Code =DicomVR_SV,
         .Name = "Signed Very Long",
         .IsString = false,
         .IsStringEncoded = false,
@@ -360,7 +360,7 @@ DicomVR DicomVR::SV = DicomVR{ ///NOLINT
 
 /// <summary>Time</summary>
 DicomVR DicomVR::TM = DicomVR{ ///NOLINT
-        .Code = DicomVRCode::TM,
+        .Code =DicomVR_TM,
         .Name = "Time",
         .IsString = true,
         .IsStringEncoded = false,
@@ -374,7 +374,7 @@ DicomVR DicomVR::TM = DicomVR{ ///NOLINT
 
 /// <summary>Unlimited Characters</summary>
 DicomVR DicomVR::UC = DicomVR{ ///NOLINT
-        .Code = DicomVRCode::UC,
+        .Code =DicomVR_UC,
         .Name = "Unlimited Characters",
         .IsString = true,
         .IsStringEncoded = true,
@@ -388,7 +388,7 @@ DicomVR DicomVR::UC = DicomVR{ ///NOLINT
 
 /// <summary>Unique Identifier</summary>
 DicomVR DicomVR::UI = DicomVR{ ///NOLINT
-        .Code = DicomVRCode::UI,
+        .Code =DicomVR_UI,
         .Name = "Unique Identifier",
         .IsString = true,
         .IsStringEncoded = false,
@@ -402,7 +402,7 @@ DicomVR DicomVR::UI = DicomVR{ ///NOLINT
 
 /// <summary>Unsigned Long</summary>
 DicomVR DicomVR::UL = DicomVR{ ///NOLINT
-        .Code = DicomVRCode::UL,
+        .Code =DicomVR_UL,
         .Name = "Unsigned Long",
         .IsString = false,
         .IsStringEncoded = false,
@@ -416,7 +416,7 @@ DicomVR DicomVR::UL = DicomVR{ ///NOLINT
 
 /// <summary>Unknown</summary>
 DicomVR DicomVR::UN = DicomVR{ ///NOLINT
-        .Code = DicomVRCode::UN,
+        .Code =DicomVR_UN,
         .Name = "Unknown",
         .IsString = false,
         .IsStringEncoded = false,
@@ -430,7 +430,7 @@ DicomVR DicomVR::UN = DicomVR{ ///NOLINT
 
 /// <summary>Universal Resource Identifier or Universal Resource Locator (URI/URL)</summary>
 DicomVR DicomVR::UR = DicomVR{ ///NOLINT
-        .Code = DicomVRCode::UR,
+        .Code =DicomVR_UR,
         .Name = "Universal Resource Identifier or Locator",
         .IsString = true,
         .IsStringEncoded = true,
@@ -444,7 +444,7 @@ DicomVR DicomVR::UR = DicomVR{ ///NOLINT
 
 /// <summary>Unsigned Short</summary>
 DicomVR DicomVR::US = DicomVR{ ///NOLINT
-        .Code = DicomVRCode::US,
+        .Code =DicomVR_US,
         .Name = "Unsigned Short",
         .IsString = false,
         .IsStringEncoded = false,
@@ -458,7 +458,7 @@ DicomVR DicomVR::US = DicomVR{ ///NOLINT
 
 /// <summary>Unlimited Text</summary>
 DicomVR DicomVR::UT = DicomVR{ ///NOLINT
-        .Code = DicomVRCode::UT,
+        .Code =DicomVR_UT,
         .Name = "Unlimited Text",
         .IsString = true,
         .IsStringEncoded = true,
@@ -472,7 +472,7 @@ DicomVR DicomVR::UT = DicomVR{ ///NOLINT
 
 
 DicomVR DicomVR::UV = DicomVR{ ///NOLINT
-        .Code = DicomVRCode::UV,
+        .Code =DicomVR_UV,
         .Name = "Unsigned Very Long",
         .IsString = false,
         .IsStringEncoded = false,
@@ -485,75 +485,74 @@ DicomVR DicomVR::UV = DicomVR{ ///NOLINT
 };
 
 
-
 DicomVR &DicomVR::ParseVR(std::string &tagStr) {
-    if (tagStr == (std::string) DicomVRCode::AE)
+    if (tagStr == DicomVR_AE)
         return DicomVR::AE;
-    if (tagStr == (std::string) DicomVRCode::AS)
+    if (tagStr == DicomVR_AS)
         return DicomVR::AS;
-    if (tagStr == (std::string) DicomVRCode::AT)
+    if (tagStr == DicomVR_AT)
         return DicomVR::AT;
-    if (tagStr == (std::string) DicomVRCode::CS)
+    if (tagStr == DicomVR_CS)
         return DicomVR::CS;
-    if (tagStr == (std::string) DicomVRCode::DA)
+    if (tagStr == DicomVR_DA)
         return DicomVR::DA;
-    if (tagStr == (std::string) DicomVRCode::DS)
+    if (tagStr == DicomVR_DS)
         return DicomVR::DS;
-    if (tagStr == (std::string) DicomVRCode::DT)
+    if (tagStr == DicomVR_DT)
         return DicomVR::DT;
-    if (tagStr == (std::string) DicomVRCode::FD)
+    if (tagStr == DicomVR_FD)
         return DicomVR::FD;
-    if (tagStr == (std::string) DicomVRCode::FL)
+    if (tagStr == DicomVR_FL)
         return DicomVR::FL;
-    if (tagStr == (std::string) DicomVRCode::IS)
+    if (tagStr == DicomVR_IS)
         return DicomVR::IS;
-    if (tagStr == (std::string) DicomVRCode::LO)
+    if (tagStr == DicomVR_LO)
         return DicomVR::LO;
-    if (tagStr == (std::string) DicomVRCode::LT)
+    if (tagStr == DicomVR_LT)
         return DicomVR::LT;
-    if (tagStr == (std::string) DicomVRCode::OB)
+    if (tagStr == DicomVR_OB)
         return DicomVR::OB;
-    if (tagStr == (std::string) DicomVRCode::OD)
+    if (tagStr == DicomVR_OD)
         return DicomVR::OD;
-    if (tagStr == (std::string) DicomVRCode::OF)
+    if (tagStr == DicomVR_OF)
         return DicomVR::OF;
-    if (tagStr == (std::string) DicomVRCode::OL)
+    if (tagStr == DicomVR_OL)
         return DicomVR::OL;
-    if (tagStr == (std::string) DicomVRCode::OW)
+    if (tagStr == DicomVR_OW)
         return DicomVR::OW;
-    if (tagStr == (std::string) DicomVRCode::OV)
+    if (tagStr == DicomVR_OV)
         return DicomVR::OV;
-    if (tagStr == (std::string) DicomVRCode::PN)
+    if (tagStr == DicomVR_PN)
         return DicomVR::PN;
-    if (tagStr == (std::string) DicomVRCode::SH)
+    if (tagStr == DicomVR_SH)
         return DicomVR::SH;
-    if (tagStr == (std::string) DicomVRCode::SL)
+    if (tagStr == DicomVR_SL)
         return DicomVR::SL;
-    if (tagStr == (std::string) DicomVRCode::SQ)
+    if (tagStr == DicomVR_SQ)
         return DicomVR::SQ;
-    if (tagStr == (std::string) DicomVRCode::SS)
+    if (tagStr == DicomVR_SS)
         return DicomVR::SS;
-    if (tagStr == (std::string) DicomVRCode::ST)
+    if (tagStr == DicomVR_ST)
         return DicomVR::ST;
-    if (tagStr == (std::string) DicomVRCode::SV)
+    if (tagStr == DicomVR_SV)
         return DicomVR::SV;
-    if (tagStr == (std::string) DicomVRCode::TM)
+    if (tagStr == DicomVR_TM)
         return DicomVR::TM;
-    if (tagStr == (std::string) DicomVRCode::UC)
+    if (tagStr == DicomVR_UC)
         return DicomVR::UC;
-    if (tagStr == (std::string) DicomVRCode::UI)
+    if (tagStr == DicomVR_UI)
         return DicomVR::UI;
-    if (tagStr == (std::string) DicomVRCode::UL)
+    if (tagStr == DicomVR_UL)
         return DicomVR::UL;
-    if (tagStr == (std::string) DicomVRCode::UN)
+    if (tagStr == DicomVR_UN)
         return DicomVR::UN;
-    if (tagStr == (std::string) DicomVRCode::UR)
+    if (tagStr == DicomVR_UR)
         return DicomVR::UR;
-    if (tagStr == (std::string) DicomVRCode::US)
+    if (tagStr == DicomVR_US)
         return DicomVR::US;
-    if (tagStr == (std::string) DicomVRCode::UT)
+    if (tagStr == DicomVR_UT)
         return DicomVR::UT;
-    if (tagStr == (std::string) DicomVRCode::UV)
+    if (tagStr == DicomVR_UV)
         return DicomVR::UV;
     return DicomVR::NONE;
 
@@ -561,39 +560,59 @@ DicomVR &DicomVR::ParseVR(std::string &tagStr) {
 
 bool DicomVR::operator==(const DicomVR &other) const {
 
-    return     this->Name == other.Name;
+    return this->Name == other.Name;
 }
 
 bool DicomVR::ElementWithFixedFormat(DicomVR &vr) {
 
     //AE, AS, AT, CS, DA, DS, DT, FL, FD, IS, LO, LT, PN, SH, SL, SS, ST, TM, UI, UL and US
-    if (   vr.Name == DicomVR::AE.Name
-        || vr.Name == DicomVR::AS.Name
-        || vr.Name == DicomVR::AT.Name
-        || vr.Name == DicomVR::CS.Name
-        || vr.Name == DicomVR::DA.Name
-        || vr.Name == DicomVR::DS.Name
-        || vr.Name == DicomVR::DT.Name
-        || vr.Name == DicomVR::FL.Name
-        || vr.Name == DicomVR::FD.Name
-        || vr.Name == DicomVR::IS.Name
-        || vr.Name == DicomVR::LO.Name
-        || vr.Name == DicomVR::LT.Name
-        || vr.Name == DicomVR::PN.Name
-        || vr.Name == DicomVR::SH.Name
-        || vr.Name == DicomVR::SL.Name
-        || vr.Name == DicomVR::SS.Name
-        || vr.Name == DicomVR::ST.Name
-        || vr.Name == DicomVR::TM.Name
-        || vr.Name == DicomVR::UI.Name
-        || vr.Name == DicomVR::UL.Name
-        || vr.Name == DicomVR::US.Name
 
-    )  {
+    if (vr.Code == DicomVR::AE.Code
+        || vr.Code == DicomVR::AS.Code
+        || vr.Code == DicomVR::AT.Code
+        || vr.Code == DicomVR::CS.Code
+        || vr.Code == DicomVR::DA.Code
+        || vr.Code == DicomVR::DS.Code
+        || vr.Code == DicomVR::DT.Code
+        || vr.Code == DicomVR::FL.Code
+        || vr.Code == DicomVR::FD.Code
+        || vr.Code == DicomVR::IS.Code
+        || vr.Code == DicomVR::LO.Code
+        || vr.Code == DicomVR::LT.Code
+        || vr.Code == DicomVR::PN.Code
+        || vr.Code == DicomVR::SH.Code
+        || vr.Code == DicomVR::SL.Code
+        || vr.Code == DicomVR::SS.Code
+        || vr.Code == DicomVR::ST.Code
+        || vr.Code == DicomVR::TM.Code
+        || vr.Code == DicomVR::UI.Code
+        || vr.Code == DicomVR::UL.Code
+        || vr.Code == DicomVR::US.Code
+
+            ) {
         return true;
     }
 
     return false;
+}
+
+
+DicomVR &DicomVR::operator=(const DicomVR &src) {
+    if (this == &src) {
+        return *this;
+    }
+    this->Code = src.Code;
+    this->Name = src.Name;
+    this->IsString = src.IsString;
+    this->IsStringEncoded = src.IsStringEncoded;
+    this->Is16bitLength = src.Is16bitLength;
+    this->IsMultiValue = src.IsMultiValue;
+    this->PaddingValue = src.PaddingValue;
+    this->MaximumLength = src.MaximumLength;
+    this->UnitSize = src.UnitSize;
+    this->ByteSwap = src.ByteSwap;
+
+    return *this;
 }
 
 //DicomVR::DicomVR(DicomVR &&src) noexcept {
@@ -607,7 +626,20 @@ bool DicomVR::ElementWithFixedFormat(DicomVR &vr) {
 //    this->MaximumLength = src.MaximumLength;
 //    this->UnitSize = src.UnitSize;
 //    this->ByteSwap = src.ByteSwap;
-//    src.Code = DicomVRCode::NONE;
+//}
+
+//DicomVR::DicomVR(DicomVR &&src) noexcept {
+//    this->Code = src.Code;
+//    this->Name = src.Name;
+//    this->IsString = src.IsString;
+//    this->IsStringEncoded = src.IsStringEncoded;
+//    this->Is16bitLength = src.Is16bitLength;
+//    this->IsMultiValue = src.IsMultiValue;
+//    this->PaddingValue = src.PaddingValue;
+//    this->MaximumLength = src.MaximumLength;
+//    this->UnitSize = src.UnitSize;
+//    this->ByteSwap = src.ByteSwap;
+//    src.Code =DicomVR_NONE;
 //    src.Name.clear();
 //    src.IsString = false;
 //    src.IsStringEncoded = false;

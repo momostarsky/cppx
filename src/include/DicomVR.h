@@ -7,9 +7,10 @@
 
 #include "comm.h"
 
-struct DicomVR {
+class DicomVR {
 public:
-    DicomVRCode Code;
+
+    std::string Code;
     std::string Name;
     bool IsString{};
     bool IsStringEncoded{};
@@ -21,6 +22,15 @@ public:
     int32_t ByteSwap{};
 
     bool operator==(const DicomVR &other) const;
+
+    DicomVR &operator=(const DicomVR &src);
+
+    DicomVR() = default;
+
+    DicomVR(const DicomVR &src) = default;
+
+
+    DicomVR(DicomVR &&src) = default;
 
 //public:
 //    DicomVR() =default;
@@ -76,7 +86,7 @@ public:
      * @param vr
      * @return
      */
-    static bool  ElementWithFixedFormat(DicomVR &vr);
+    static bool ElementWithFixedFormat(DicomVR &vr);
 };
 
 const uint8_t PadSpace = 0x20;

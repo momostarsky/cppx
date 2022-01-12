@@ -36,68 +36,43 @@ enum class SeekOnce : int {
 };
 
 
-class DicomVRCode {
-public:
+extern const char * const DicomVR_AE ;
+extern const char * const DicomVR_AS ;
+extern const char * const DicomVR_AT ;
+extern const char * const DicomVR_CS ;
+extern const char * const DicomVR_DA ;
+extern const char * const DicomVR_DS ;
+extern const char * const DicomVR_DT ;
+extern const char * const DicomVR_FD ;
+extern const char * const DicomVR_FL ;
+extern const char * const DicomVR_IS ;
+extern const char * const DicomVR_LO ;
+extern const char * const DicomVR_LT ;
+extern const char * const DicomVR_OB ;
+extern const char * const DicomVR_OD ;
+extern const char * const DicomVR_OF ;
+extern const char * const DicomVR_OL ;
+extern const char * const DicomVR_OV ;
+extern const char * const DicomVR_OW ;
+extern const char * const DicomVR_PN ;
+extern const char * const DicomVR_SH ;
+extern const char * const DicomVR_SL ;
+extern const char * const DicomVR_SQ ;
+extern const char * const DicomVR_SS ;
+extern const char * const DicomVR_ST ;
+extern const char * const DicomVR_SV ;
+extern const char * const DicomVR_TM ;
+extern const char * const DicomVR_UC ;
+extern const char * const DicomVR_UI ;
+extern const char * const DicomVR_UL ;
+extern const char * const DicomVR_UN ;
+extern const char * const DicomVR_UR ;
+extern const char * const DicomVR_US ;
+extern const char * const DicomVR_UT ;
+extern const char * const DicomVR_UV ;
+extern const char * const DicomVR_NONE  ;
 
-    DicomVRCode() noexcept {
-        mCode = "NONE";
-    }
 
-    explicit DicomVRCode(const char *code) noexcept: mCode(code) {
-
-
-    }
-
-    explicit operator std::string() {
-        return mCode;
-    }
-
-    bool operator==(DicomVRCode &other) const {
-        return this->mCode == other.mCode;
-    }
-
-    explicit operator const char *() {
-        return mCode.c_str();
-    }
-
-    static DicomVRCode AE;
-    static DicomVRCode AS;
-    static DicomVRCode AT;
-    static DicomVRCode CS;
-    static DicomVRCode DA;
-    static DicomVRCode DS;
-    static DicomVRCode DT;
-    static DicomVRCode FD;
-    static DicomVRCode FL;
-    static DicomVRCode IS;
-    static DicomVRCode LO;
-    static DicomVRCode LT;
-    static DicomVRCode OB;
-    static DicomVRCode OD;
-    static DicomVRCode OF;
-    static DicomVRCode OL;
-    static DicomVRCode OV;
-    static DicomVRCode OW;
-    static DicomVRCode PN;
-    static DicomVRCode SH;
-    static DicomVRCode SL;
-    static DicomVRCode SQ;
-    static DicomVRCode SS;
-    static DicomVRCode ST;
-    static DicomVRCode SV;
-    static DicomVRCode TM;
-    static DicomVRCode UC;
-    static DicomVRCode UI;
-    static DicomVRCode UL;
-    static DicomVRCode UN;
-    static DicomVRCode UR;
-    static DicomVRCode US;
-    static DicomVRCode UT;
-    static DicomVRCode UV;
-    static DicomVRCode NONE;
-private:
-    std::string mCode;
-};
 
 void StringReplace(std::string &strBase, const std::string &strSrc, const std::string &strDes);
 
@@ -106,16 +81,15 @@ void StringTrimStartEnd(std::string &strBase, std::string &strDest);
 void Split(const std::string &src, const std::vector<std::string> &separators, std::vector<std::string> &dest);
 
 
+void int4to_bytes(uint32_t num, char bytes[4] /*in array size must be 4*/);
 
-void int4to_bytes(uint32_t num, char bytes[4] /*in array size must be 4*/)  ;
+uint32_t bytesto_int4(const char bytes[4]);
 
-uint32_t bytesto_int4(const char bytes[4])  ;
+uint16_t bytesto_int2(const char bytes[2]);
 
-uint16_t bytesto_int2(const char bytes[2])  ;
+uint64_t bytesto_int8(const char bytes[8] /*size must be 8*/);
 
-uint64_t bytesto_int8(const char bytes[8] /*size must be 8*/) ;
-
-void int8to_bytes(uint64_t num, char bytes[8] /*in array size must be 8*/)  ;
+void int8to_bytes(uint64_t num, char bytes[8] /*in array size must be 8*/);
 
 
 #endif //CPPX_COMM_H

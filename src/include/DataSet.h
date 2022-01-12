@@ -7,6 +7,7 @@
 
 #include "DicomReader.h"
 #include "DicomTag.h"
+#include "DicomItem.h"
 #include <list>
 
 class DataSet {
@@ -23,7 +24,7 @@ public:
 
 private:
     DicomReader &pReader;
-    std::list<DicomTag>  tags ;
+    std::list<DicomItem>  items ;
 };
 
 
