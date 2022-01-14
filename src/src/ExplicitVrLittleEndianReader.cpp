@@ -175,7 +175,7 @@ ExplicitVrLittleEndianReader::ReadDataset(std::list<DicomItem> &items, uint32_t 
 
 }
 
-ExplicitVrLittleEndianReader::ExplicitVrLittleEndianReader(FILE *cin) : mReader(cin) {
+ExplicitVrLittleEndianReader::ExplicitVrLittleEndianReader(  FILE *cin) : mReader(cin) {
 
     assert(mReader != nullptr);
     fpos_t opx;

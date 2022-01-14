@@ -13,18 +13,45 @@
 class DataSet {
 
 public:
-    explicit DataSet(DicomReader &reader );
-    DataSet operator=(const DataSet&)  =delete;
+    explicit DataSet(FILE *reader);
 
-    DataSet(const DataSet&) =delete;
+    explicit DataSet(std::string &filePath);
 
-    DataSet(DataSet&&) =delete;
+    DataSet(const char *pBuffer, size_t bufferSize);
 
-    void Parse(DicomTag& stopTag);
+
+    DataSet operator=(const DataSet &) = delete;
+
+    DataSet(const DataSet &) = delete;
+
+    DataSet(DataSet &&) = delete;
+
+    void ReadDataset(uint32_t stopTag = 0, bool expandTreeAsList=false );
+
+    virtual  ~DataSet();
+
+
+    static void Read(const char *pBuffer, uint32_t max_size, std::vector<std::string> &values);
+
+    static void Read(const char *pBuffer, uint32_t max_size, std::vector<uint16_t> &values);
+
+    static void Read(const char *pBuffer, uint32_t max_size, std::vector<uint32_t> &values);
+
+    static void Read(const char *pBuffer, uint32_t max_size, std::vector<uint64_t> &values);
+
+    uint16_t GetValue(uint32_t tagId, size_t index = 0);
+
+    std::vector<uint16_t> GetValues(uint32_t tagId);
+
+    std::list<DicomItem>&  Items(){
+        return  dataSets;
+    }
+
 
 private:
-    DicomReader &pReader;
-    std::list<DicomItem>  items ;
+    FILE *pReader;
+    std::list<DicomItem> fileMeta;
+    std::list<DicomItem> dataSets;
 };
 
 

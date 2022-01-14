@@ -10,7 +10,7 @@
 #include <iostream>
 
 
-void DicomHeaderParser::Parser(FILE *fd, std::list<DicomItem> &metaInfo) {
+void DicomHeaderParser::Parser(  FILE *fd, std::list<DicomItem> &metaInfo) {
     fseek(fd, 128, SEEK_CUR); // 回溯
 
     char dcmSign[4];

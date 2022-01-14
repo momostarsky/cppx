@@ -18,10 +18,8 @@ DicomItem::~DicomItem() {
 DicomItem::DicomItem(uint16_t groupId, uint16_t elementId, DicomVR vr,
                      uint32_t valueLength, uint32_t depth,
                      const char *dataBuffer)
-        : mDepth(depth), mValueLength(valueLength) {
+        : mDepth(depth), mValueLength(valueLength), mVr(std::move(vr)), mParent(-1) {
     mTag = new DicomTag(groupId, elementId);
-    mVr = std::move(vr);
-
     if (mValueLength > 0 && mValueLength != 0xFFFFFFFF) {
         mValueBuffer = new char[mValueLength];
         if (nullptr != dataBuffer) {
@@ -55,8 +53,7 @@ DicomItem::DicomItem(const DicomItem &other) :
         DicomItem(other.mTag->Group(), other.mTag->Element(),
                   other.mVr, other.mValueLength, other.mDepth,
                   other.mValueBuffer) {
-
-
+    mParent = other.mParent;
     if (!other.mSubs.empty()) {
 //        std::cout << "copy From :" << other.mSubs.size() << std::endl;
 //        for (const auto &co: other.mSubs) {

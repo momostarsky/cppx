@@ -55,8 +55,6 @@ public:
     static bool ElementWithFixedFormat(const DicomVR &vr);
 };
 
-const uint8_t PadSpace = 0x20;
-const uint8_t PadZero = 0x00;
 
 extern const DicomVR *pVR_NONE;
 extern const DicomVR *pVR_AE;

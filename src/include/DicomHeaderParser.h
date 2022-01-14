@@ -10,6 +10,11 @@
 #include  <string>
 #include <istream>
 
+/***
+ * 根据DICOM3 的标准协议， 符合DICOM3 标准的文件， FileMetaInformation 的编码是
+ * 固定的ExplicitVrLittleEndian 编码格式
+ *
+ */
 class DicomHeaderParser {
 
 

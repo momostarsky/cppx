@@ -50,6 +50,10 @@ public:
         return mDepth;
     }
 
+    int  getParent() const {
+        return mParent;
+    }
+
     void setDepth(uint32_t depth) {
         mDepth = depth;
     }
@@ -58,16 +62,24 @@ public:
         mSubs.push_back(item);
     }
 
-    std::list<DicomItem> Subs() const {
-        return  mSubs ;
+    void setParentId(int  pos) {
+        mParent = pos;
     }
 
+    std::list<DicomItem> &Subs() const {
+        return const_cast<std::list<DicomItem> &>(mSubs);
+    }
+
+    void ClearSubs(){
+        mSubs.clear();
+    }
 protected:
     DicomTag *mTag;
     DicomVR mVr;
     uint32_t mValueLength;
     char *mValueBuffer;
     uint32_t mDepth;
+    int  mParent;
     std::list<DicomItem> mSubs;
 
 

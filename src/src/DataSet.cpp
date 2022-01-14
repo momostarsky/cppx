@@ -3,163 +3,120 @@
 //
 
 
-#include <bit>
 #include <cstdint>
-#include <iostream>
-#include <iomanip>
+#include <cassert>
 #include "../include/DataSet.h"
 #include "../include/OutOfException.h"
-#include "../include/DicomVR.h"
+#include "../include/DicomHeaderParser.h"
+#include "../include/ExplicitVrLittleEndianReader.h"
 
 
-DataSet::DataSet(DicomReader &reader) : pReader(reader) {
-
-
-}
-
-void parseSQWithExpliciteLength(DicomReader &reader, uint32_t dataLength) {
-
+DataSet::DataSet(FILE *reader) : pReader(reader) {
 }
 
 
-void parseSQWithUndefinedLength(DicomReader &reader) {
-    std::cout << " parseSQWithUndefinedLength " << std::endl;
-    uint16_t groupId = 0;
-    uint16_t elementId = 0;
-    while (true) {
-        char grp[2]{0};
-        char elm[2]{0};
-
-        if (!reader.Read(grp, 2)) {
-            break;
-        }
-        if (!reader.Read(elm, 2)) {
-            break;
-        }
-
-        groupId = bytesto_int2(grp);
-        elementId = bytesto_int2(elm);
-
-        if (groupId == 0xFFFE && elementId == 0xE0DD) {
-            //Sequence Delimitation Item
-            reader.Seek(4, SeekOnce::Current);
-            break;
-        }
-        if (groupId == 0xFFFE && elementId == 0xE000) {
-            // Item Tag
-            char vl[4];
-            reader.Read(vl, 4);
-            uint32_t x = bytesto_int4(vl);
-            reader.Seek((int32_t) x, SeekOnce::Current);
-
-            std::cout << " ItemValueLength：" << x << std::endl;
-        } else {
-            //啥也不是
-            reader.Seek(-4, SeekOnce::Current);
-            break;
-        }
+void DataSet::Read(const char *pBuffer, uint32_t max_size, std::vector<std::string> &values) {
+    assert(pBuffer != nullptr);
+    assert(0 == max_size % 2);
+    uint32_t rs = max_size;
+    if (pBuffer[max_size - 1] == PadSpace) {
+        rs = max_size - 1;
     }
-
+    std::string tmp(pBuffer, 0, rs);
+    std::vector<std::string> sep = {"\\"};
+    Split(tmp, sep, values);
 }
 
-void DataSet::Parse(DicomTag &stopTag) {
-    if (!pReader.Seek(128L, SeekOnce::Begin)) {
-        throw OutOfException("文件长度不足");
+
+void DataSet::Read(const char *pBuffer, uint32_t max_size, vector<uint16_t> &values) {
+    assert(pBuffer != nullptr);
+    assert(0 == max_size % 2);
+    uint32_t rw = max_size / 2;
+    for (uint32_t i = 0; i < rw; i++) {
+        uint16_t t = bytesto_int2(pBuffer + 2 * i);
+        values.push_back(t);
     }
-    char dicomSignature[4];
-    if (!pReader.Read(dicomSignature, 4)) {
+}
 
-        throw OutOfException("文件格式不符合DICOM3 标准");
-
+void DataSet::Read(const char *pBuffer, uint32_t max_size, vector<uint32_t> &values) {
+    assert(pBuffer != nullptr);
+    assert(0 == max_size % 4);
+    uint32_t rw = max_size / 4;
+    for (uint32_t i = 0; i < rw; i++) {
+        uint32_t t = bytesto_int4(pBuffer + 4 * i);
+        values.push_back(t);
     }
+}
 
-    if (dicomSignature[0] != 'D'
-        || dicomSignature[1] != 'I'
-        || dicomSignature[2] != 'C'
-        || dicomSignature[3] != 'M'
-            ) {
-        throw OutOfException("文件不是DICOM3文件");
+void DataSet::Read(const char *pBuffer, uint32_t max_size, vector<uint64_t> &values) {
+
+    assert(pBuffer != nullptr);
+    assert(0 == max_size % 8);
+
+    uint32_t rw = max_size / 8;
+    for (uint32_t i = 0; i < rw; i++) {
+        uint64_t t = bytesto_int8(pBuffer + 8 * i);
+        values.push_back(t);
     }
+}
 
-    //--- 文件头都是 ExplicitVRLitterEnding
+uint16_t DataSet::GetValue(uint32_t tagId, size_t index) {
+    return 0;
+}
 
-    uint16_t groupId = 0;
-    uint16_t elementId = 0;
-    char vr[3] = {0};
-    uint32_t valueLength = 0;
-    // DICOM FilemetaInformation 的字段取值最长就是64个字符
-    char valueBuffer[64] = {0};
+std::vector<uint16_t> DataSet::GetValues(uint32_t tagId) {
+    return {};
+}
 
-    while (!pReader.Endof()) {
+void flat(DicomItem &citem, std::list<DicomItem> &dataSet, bool appendCitem = true, int parentIndex = -1) {///NOLINT
 
-        char grp[2]{0};
-        char elm[2]{0};
 
-        if (!pReader.Read(grp, 2)) {
-            break;
-        }
-        if (!pReader.Read(elm, 2)) {
-            break;
-        }
-
-        groupId = bytesto_int2(grp);
-        elementId = bytesto_int2(elm);
-
-        if (elementId == stopTag.Element() && groupId == stopTag.Group()) {
-            pReader.Seek(-4, SeekOnce::Current);
-            break;
-        }
-        pReader.Read(vr, 2);
-        std::string vrstr(vr);
-        const DicomVR* tagVr = DicomVR::ParseVR(vrstr);
-        if (tagVr == pVR_NONE) {
-            throw OutOfException("TagVR 解析错误");
-        }
-        if (tagVr == pVR_SQ ) {
-            std::cout << "SQ";
-            pReader.Seek(2, SeekOnce::Current);
-            char vl[4];
-            pReader.Read(vl, 4);
-            uint32_t x = bytesto_int4(vl);
-            if (x == 0xFFFFFFFF) {
-                parseSQWithUndefinedLength(pReader);
-
-            } else {
-                parseSQWithExpliciteLength(pReader, x);
-            }
-        } else {
-
-            if (DicomVR::ElementWithFixedFormat(*tagVr)) {
-                uint16_t tagV = 0;
-                pReader.Read(reinterpret_cast<const char *>(&tagV), 2);
-                valueLength = tagV;
-            } else {
-                if (tagVr->Is16bitLength) {
-                    uint16_t tagV = 0;
-                    pReader.Read(reinterpret_cast<const char *>(&tagV), 2);
-                    valueLength = tagV;
-                } else {
-                    pReader.Seek(2, SeekOnce::Current);
-                    char vl[4];
-                    pReader.Read(vl, 4);
-                    uint32_t x = bytesto_int4(vl);
-                    valueLength = x;
-                }
-
-            }
-            char fmtBuffer[16]{0};
-            snprintf(fmtBuffer, 16, "0x%04X,0x%04X", groupId, elementId);
-
-            std::cout << "Tag :(" << fmtBuffer << ")," << vrstr << ": Length is :" << valueLength << std::endl;
-            char *buffer = new char[valueLength + 1]{0};
-            pReader.Read(buffer, valueLength);
-            char posStr[10]{0};
-            snprintf(posStr, 10, "0x%04X", pReader.Postion());
-            std::cout << "and ValueLength  is :" << valueLength << ", Pos:" << posStr << std::endl;
-
-            delete[] buffer;
+    if (appendCitem) {
+        citem.setParentId(parentIndex);
+        dataSet.push_back(citem);
+    }
+    int subParentId = (int) dataSet.size() - 1;
+    for (auto &ck: citem.Subs()) {
+        ck.setParentId(subParentId);
+        dataSet.push_back(ck);
+        int subp = (int) dataSet.size() - 1;
+        if (!ck.Subs().empty()) {
+            flat(ck, dataSet, false, subp);
         }
     }
 
 
 }
+
+void DataSet::ReadDataset(const uint32_t stopTag, bool expandTreeAsList) {
+    this->fileMeta.clear();
+    this->dataSets.clear();
+    DicomHeaderParser::Parser(pReader, this->fileMeta);
+    ExplicitVrLittleEndianReader dr(pReader);
+    std::list<DicomItem> items;
+    dr.ReadDataset(items);
+    for (auto &cv: items) {
+        flat(cv, this->dataSets, true, -1);
+    }
+    if (expandTreeAsList) {
+        for (auto &cv: this->dataSets) {
+            cv.ClearSubs();
+        }
+    }
+}
+
+DataSet::~DataSet() {
+    if (!pReader) {
+        fclose(pReader);
+        pReader = nullptr;
+    }
+}
+
+DataSet::DataSet(const char *pBuffer, size_t bufferSize) {
+    pReader = fmemopen((void *) pBuffer, bufferSize, "rb");
+}
+
+DataSet::DataSet(string &filePath) {
+    pReader = fopen(filePath.c_str(), "rb");
+}
+

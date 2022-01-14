@@ -21,11 +21,11 @@ public:
 
     bool operator==(const ExplicitVrLittleEndianReader &) = delete;
 
-    void ReadDataset(std::list<DicomItem> &items, uint32_t depath=1);
+    void ReadDataset(std::list<DicomItem> &items, uint32_t depath = 1);
 
 protected:
-    FILE   *mReader;
-    size_t  mDataLength;
+    FILE *mReader;
+    size_t mDataLength;
 };
 
 

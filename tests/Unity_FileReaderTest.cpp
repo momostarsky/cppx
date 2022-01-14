@@ -33,15 +33,7 @@ namespace {
 
     }
 
-    TEST(TagTest, FileStreamReaderTagx) {//NOLINT
-        std::string dcmFile("/home/dhz/dcmStore/D-J2K.dcm");
-        DicomFileReader dr(dcmFile);
 
-        DataSet ds(dr);
-        DicomTag stopTag(0x7FE0, 0x0010);
-        ds.Parse(stopTag);
-
-    }
 
     TEST(TagTest, BytesSwapTests) {//NOLINT
         char buf[4] = {0x02, 0x00, 0x00, 0x0};

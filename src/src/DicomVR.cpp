@@ -569,26 +569,26 @@ bool DicomVR::ElementWithFixedFormat(const DicomVR &vr) {
     //AE, AS, AT, CS, DA, DS, DT, FL, FD, IS, LO, LT, PN, SH, SL, SS, ST, TM, UI, UL and US
 
     if (vr.Code == DicomVR_AE
-        || vr.Code == DicomVR_AS
-        || vr.Code == DicomVR_AT
-        || vr.Code == DicomVR_CS
-        || vr.Code == DicomVR_DA
-        || vr.Code == DicomVR_DS
-        || vr.Code == DicomVR_DT
-        || vr.Code == DicomVR_FL
-        || vr.Code == DicomVR_FD
-        || vr.Code == DicomVR_IS
-        || vr.Code == DicomVR_LO
-        || vr.Code == DicomVR_LT
-        || vr.Code == DicomVR_PN
-        || vr.Code == DicomVR_SH
-        || vr.Code == DicomVR_SL
-        || vr.Code == DicomVR_SS
-        || vr.Code == DicomVR_ST
-        || vr.Code == DicomVR_TM
-        || vr.Code == DicomVR_UI
-        || vr.Code == DicomVR_UL
-        || vr.Code == DicomVR_US) {
+     || vr.Code == DicomVR_AS
+    || vr.Code == DicomVR_AT
+    || vr.Code == DicomVR_CS
+    || vr.Code == DicomVR_DA
+    || vr.Code == DicomVR_DS
+    || vr.Code == DicomVR_DT
+    || vr.Code == DicomVR_FL
+    || vr.Code == DicomVR_FD
+    || vr.Code == DicomVR_IS
+    || vr.Code == DicomVR_LO
+    || vr.Code == DicomVR_LT
+    || vr.Code == DicomVR_PN
+    || vr.Code == DicomVR_SH
+    || vr.Code == DicomVR_SL
+    || vr.Code == DicomVR_SS
+    || vr.Code == DicomVR_ST
+    || vr.Code == DicomVR_TM
+    || vr.Code == DicomVR_UI
+    || vr.Code == DicomVR_UL
+    || vr.Code == DicomVR_US) {
         return true;
     }
 
