@@ -9,21 +9,19 @@
 
 
 void
-ExplicitVrLittleEndianReader::parseSQSegmemnt(FILE *reader, DicomItem *ite, uint16_t sqGroupId, uint16_t sqElementId,
-                                              std::list<DicomItem> &subItems) {///NOLINT
+ExplicitVrLittleEndianReader::parseSQSegmemnt(FILE *reader, DicomItem *ite, std::list<DicomItem> &subItems) {///NOLINT
     uint16_t groupId = 0;
     uint16_t elementId = 0;
     char skip4[4]{0};
     char grp[2]{0};
     char elm[2]{0};
     char text[125] = {0};
-
+    char vr[2] = {0};
+    char vl[4] = {0};
     std::list<DicomItem> stacks;
     stacks.push_front(*ite);
 
     while (!stacks.empty()) {
-
-
         auto cptr = stacks.begin();
 
         if (cptr == stacks.end()) {
@@ -49,7 +47,6 @@ ExplicitVrLittleEndianReader::parseSQSegmemnt(FILE *reader, DicomItem *ite, uint
             assert(k4 == 4);
             stacks.pop_front();
             DicomItem seqEnd(0xFFFE, 0xE0DD, *pVR_NONE, 0x0, cDepth - 1);
-
             subItems.push_back(seqEnd);
             continue;
         }
@@ -66,7 +63,6 @@ ExplicitVrLittleEndianReader::parseSQSegmemnt(FILE *reader, DicomItem *ite, uint
 
         if (groupId == 0xFFFE && elementId == 0xE000) {
             // Item Tag
-            char vl[4];
             size_t sk = fread(vl, 1, 4, reader);
             assert(sk == 4);
             uint32_t x = bytesto_int4(vl);
@@ -85,17 +81,9 @@ ExplicitVrLittleEndianReader::parseSQSegmemnt(FILE *reader, DicomItem *ite, uint
         }
 
 
-        char vr[2] = {0};
         size_t vrL = fread(vr, 1, 2, mReader);
         assert(vrL == 2);
         std::string vrstr(vr, 2);
-
-//        char sqtext[125] = {0};
-//        char sqfmtStr[] = "SQ:0x%04X,0x%04X";
-//        sprintf(sqtext, sqfmtStr, groupId, elementId);
-//
-//
-//        std::cout << sqtext << ",VR=" << vrstr << std::endl;
         const DicomVR *tagVr = DicomVR::ParseVR(vrstr);
         if (tagVr == pVR_NONE) {
             std::cout << "SQ  Invalidated  VR：" << vrstr << std::endl;
@@ -130,23 +118,12 @@ ExplicitVrLittleEndianReader::parseSQSegmemnt(FILE *reader, DicomItem *ite, uint
             subItems.push_back(sqptr);
             if (valueLength == 0xFFFFFFFF) {
                 //Value Field has an Undefined Length and a Sequence Delimitation Item marks the end of the Value Field.
-                parseSQSegmemnt(mReader, &sqptr, groupId, elementId, subItems);
+                parseSQSegmemnt(mReader, &sqptr, subItems);
             } else if (valueLength > 0) {
                 sqptr.ReadData(mReader);
-                //    parseSubs(&sqptr);
             }
-
         }
     }
-//    char fmtStr[] = "Process:0x%04X,0x%04X";
-//    sprintf(text, fmtStr, sqGroupId, sqElementId);
-//    std::cout << text << std::endl;
-//    for (  DicomItem &si: subItems) {
-//        std::cout << si.toString() << std::endl;
-//    }
-//    std::cout << "Process Over !" << std::endl;
-
-
 }
 
 
@@ -235,15 +212,26 @@ void ExplicitVrLittleEndianReader::ReadDataset(std::list<DicomItem> &items, uint
 
     uint16_t groupId = 0;
     uint16_t elementId = 0;
-    char vr[3] = {0};
+
     uint32_t valueLength = 0;
 // DICOM FilemetaInformation 的字段取值最长就是64个字符
+
+//  tag.VR
+    char vr[3] = {0};
+// tag.GroupId
     char grp[2]{0};
+    // tag.ElementId
     char elm[2]{0};
+    // tag.ValueLength 2 bytes
     char vl2[2]{0};
+    // tag.ValueLength 4 bytes
     char vl4[4]{0};
 
+    // 保留字节 2 个
     char reserved2[2]{0};
+
+//    char tagText[125] = {0};
+//    char tagFmt[] = "ReadTag:0x%04X,0x%04X, %s";
 
     while (true) {
 
@@ -256,12 +244,11 @@ void ExplicitVrLittleEndianReader::ReadDataset(std::list<DicomItem> &items, uint
         if (gl != 2) {
             break;
         }
+
         groupId = bytesto_int2(grp);
         size_t el = fread(elm, 1, 2, mReader);
         assert(el == 2);
         elementId = bytesto_int2(elm);
-
-
         if (groupId == 0xFFFE && elementId == 0xE000) {
             //---向前跳4个字节
             fseek(mReader, 4, SEEK_CUR);
@@ -272,23 +259,15 @@ void ExplicitVrLittleEndianReader::ReadDataset(std::list<DicomItem> &items, uint
             // 回退4个字节。。
             fseek(mReader, -4, SEEK_CUR);
             break;
-
         }
-
 
         size_t vrL = fread(vr, 1, 2, mReader);
         assert(vrL == 2);
-
         std::string vrstr(vr, 2);
 
+//        sprintf(tagText, tagFmt, groupId, elementId, vrstr.c_str());
+//        std::cout << tagText << std::endl;
 
-        char tagText[125] = {0};
-        char tagFmt[] = "ReadDataset:0x%04X,0x%04X, %s";
-        sprintf(tagText, tagFmt, groupId, elementId, vrstr.c_str());
-        std::cout << tagText << std::endl;
-        if (groupId == 0x0043 && elementId == 0x1028) {
-            std::cout << "BreakPoints Here :" << std::endl;
-        }
         const DicomVR *tagVr = DicomVR::ParseVR(vrstr);
         if (tagVr == pVR_NONE) {
             char text[125] = {0};
@@ -297,8 +276,6 @@ void ExplicitVrLittleEndianReader::ReadDataset(std::list<DicomItem> &items, uint
             std::cout << "InvalidatedTag :" << text << " and  VR：" << vrstr << std::endl;
             break;
         }
-
-
         DicomItem *ptr = nullptr;
         if (DicomVR::ElementWithFixedFormat(*tagVr)) {
             size_t vrx = fread(vl2, 1, 2, mReader);
@@ -311,6 +288,8 @@ void ExplicitVrLittleEndianReader::ReadDataset(std::list<DicomItem> &items, uint
             if (valueLength > 0) {
                 ptr->ReadData(mReader);
             }
+
+
         } else {
             size_t sk = fread(reserved2, 1, 2, mReader);
             assert(sk == 2);
@@ -322,22 +301,18 @@ void ExplicitVrLittleEndianReader::ReadDataset(std::list<DicomItem> &items, uint
             if (valueLength == 0xFFFFFFFF) {
                 std::list<DicomItem> subs;
                 //Value Field has an Undefined Length and a Sequence Delimitation Item marks the end of the Value Field.
-                parseSQSegmemnt(mReader, ptr, groupId, elementId, subs);
+                parseSQSegmemnt(mReader, ptr, subs);
 
                 for (const auto &ci: subs) {
-
                     //  std::cout <<"MainLoop:" << ci.toString() << std::endl;
-
                     ptr->addSubItem(ci);
-
                 }
             } else if (valueLength > 0) {
                 ptr->ReadData(mReader);
                 //  parseSubs(ptr);
             }
+
         }
-
-
         items.push_back(*ptr);
     }
 

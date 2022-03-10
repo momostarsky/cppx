@@ -30,7 +30,7 @@ protected:
 
     void parseValueFieldWithUndefinedLength(FILE *reader, DicomItem *ite);
 
-    void parseSQSegmemnt(FILE *reader, DicomItem *ite, uint16_t sqGroupId, uint16_t sqElementId, std::list<DicomItem>& subItems);
+    void parseSQSegmemnt(FILE *reader, DicomItem *ite,  std::list<DicomItem>& subItems);
 
 
 
