@@ -133,30 +133,33 @@ void DataSet::ReadDataset(const uint32_t stopTag, bool expandTreeAsList) {
         std::cout << "Unsportted  TransferSyntax UID: " << ts << std::endl;
         return;
     }
-    std::list<DicomItem> items;
+  //  std::list<DicomItem> items;
 
     if (transferSyntax.Endian == Endian::Little) {
         if (transferSyntax.IsExplicitVR) {
             ExplicitVrLittleEndianReader dr(pReader);
-            dr.ReadDataset(items);
+            dr.ReadDataset(dataSets);
         } else {
             ImplicitVrLittleEndianReader dr(pReader);
-            dr.ReadDataset(items);
+            dr.ReadDataset(dataSets);
         }
     } else {
         std::cout << "UnImplimentions of BigEndian" << ts << std::endl;
         return;
     }
 
+//    std::copy(items.begin(), items.end(),  std::back_inserter(this->dataSets));
+//
+//    std::list<DicomItem>().swap(items);
 
-    for (auto &cv: items) {
-        flat(cv, this->dataSets, true, -1);
-    }
-    if (expandTreeAsList) {
-        for (auto &cv: this->dataSets) {
-            cv.ClearSubs();
-        }
-    }
+//    for (auto &cv: items) {
+//        flat(cv, this->dataSets, true, -1);
+//    }
+//    if (expandTreeAsList) {
+//        for (auto &cv: this->dataSets) {
+//            cv.ClearSubs();
+//        }
+//    }
 }
 
 DataSet::~DataSet() {
