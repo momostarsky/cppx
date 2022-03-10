@@ -11,7 +11,7 @@ Endian Endian::Little = Endian{false}; //NOLINT
 Endian Endian::Network = Endian{true};//NOLINT
 
 
-DicomUID DicomUID::Empty = DicomUID{
+DicomUID DicomUID::Empty = DicomUID{///NOLINT
         .uid="",
         .name="Empty",
         .type=DicomUidType::Unknown,

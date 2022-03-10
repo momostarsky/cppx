@@ -43,6 +43,7 @@ public:
     std::string name;
     DicomUidType type{DicomUidType::Unknown};
     bool retired{false};
+
     DicomUID() noexcept = default;
 
     bool operator==(const DicomUID &other) const {
@@ -5181,6 +5182,10 @@ public:
         auto *pBytePointer = (std::uint8_t *) &m_endianCheck;
         std::uint8_t px = pBytePointer[0];
         _isBigEndian = px == 0xff;
+    }
+
+    bool operator==(const struct Endian &other) {
+        return this->_isBigEndian == other._isBigEndian;
     }
 
 private:

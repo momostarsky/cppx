@@ -5,10 +5,13 @@
 
 #include <cstdint>
 #include <cassert>
+#include <iostream>
 #include "../include/DataSet.h"
 #include "../include/OutOfException.h"
 #include "../include/DicomHeaderParser.h"
 #include "../include/ExplicitVrLittleEndianReader.h"
+#include "../include/TransferFactory.h"
+#include "../include/ImplicitVrLittleEndianReader.h"
 
 
 DataSet::DataSet(FILE *reader) : pReader(reader) {
@@ -92,9 +95,60 @@ void DataSet::ReadDataset(const uint32_t stopTag, bool expandTreeAsList) {
     this->fileMeta.clear();
     this->dataSets.clear();
     DicomHeaderParser::Parser(pReader, this->fileMeta);
-    ExplicitVrLittleEndianReader dr(pReader);
+    std::cout << "Begin DicomFileMetaInformation" << std::endl;
+    std::string ts;
+    for (auto &hi: this->fileMeta) {
+        std::cout << hi.toString() << std::endl;
+        auto ctag = hi.getTag();
+        if (ctag->Group() == 0x0002 && ctag->Element() == 0x0010) {
+
+
+            size_t sz = hi.getValueLength();
+
+            if (hi.getData()[sz - 1] == 0x00 || hi.getData()[sz - 1] == 0x20) {
+                ts.append(hi.getData(), sz - 1);
+            } else {
+                ts.append(hi.getData());
+            }
+            std::cout << "TransferSyntaxUID:[" << ts << "]" << std::endl;
+        }
+    }
+
+
+    std::cout << "End DicomFileMetaInformation" << std::endl;
+
+    if (ts.empty()) {
+        std::cout << "  TransferSyntax is Emtpty " << std::endl;
+        return;
+    }
+    auto pts = TransferFactory::getTransferFactory();
+
+    DicomUID tsuid = pts->GetDicomUID(ts);
+    if (tsuid == DicomUID::Empty) {
+        std::cout << "Find TransferSyntax Failed " << std::endl;
+        return;
+    }
+    DicomTransferSyntax transferSyntax = pts->GetTransferSyntax(tsuid);
+    if (transferSyntax.UID == DicomUID::Empty) {
+        std::cout << "Unsportted  TransferSyntax UID: " << ts << std::endl;
+        return;
+    }
     std::list<DicomItem> items;
-    dr.ReadDataset(items);
+
+    if (transferSyntax.Endian == Endian::Little) {
+        if (transferSyntax.IsExplicitVR) {
+            ExplicitVrLittleEndianReader dr(pReader);
+            dr.ReadDataset(items);
+        } else {
+            ImplicitVrLittleEndianReader dr(pReader);
+            dr.ReadDataset(items);
+        }
+    } else {
+        std::cout << "UnImplimentions of BigEndian" << ts << std::endl;
+        return;
+    }
+
+
     for (auto &cv: items) {
         flat(cv, this->dataSets, true, -1);
     }

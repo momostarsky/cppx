@@ -25,7 +25,7 @@ if(NOT CMAKE_BUILD_TYPE)
   
 endif(NOT CMAKE_BUILD_TYPE)
 
-INCLUDE_REGULAR_EXPRESSION("^.*$")
+include_regular_expression("^.*$")
 
 # Defines the source code for the library
 option (BUILD_SHARED_LIBS "Build CharLS with shared libraries." OFF)
@@ -35,7 +35,7 @@ option (BUILD_TESTING     "Build tests"                         ON)
 
 
 #CharLS Library
-SET(CHARLS_SRCS
+set(CHARLS_SRCS
         CharLS/interface.cpp
         CharLS/jpegls.cpp
         CharLS/jpegmarkersegment.cpp
@@ -64,7 +64,7 @@ SET(CHARLS_SRCS
  )
 
 #libijg8 library
-SET(LIBIJG8_SRCS
+set(LIBIJG8_SRCS
         libijg8/jaricom.c
         libijg8/jcapimin.c
         libijg8/jcapistd.c
@@ -132,7 +132,7 @@ SET(LIBIJG8_SRCS
 )
 
 #libijg12 library
-SET(LIBIJG12_SRCS
+set(LIBIJG12_SRCS
         libijg12/jaricom.c
         libijg12/jcapimin.c
         libijg12/jcapistd.c
@@ -200,7 +200,7 @@ SET(LIBIJG12_SRCS
 )
 
 #libijg12 library
-SET(LIBIJG16_SRCS
+set(LIBIJG16_SRCS
         libijg16/jaricom.c
         libijg16/jcapimin.c
         libijg16/jcapistd.c
@@ -268,7 +268,7 @@ SET(LIBIJG16_SRCS
 )
 
 #OpenJPEG Library
-SET(OPENJPEG_SRCS
+set(OPENJPEG_SRCS
         OpenJPEG/bio.c
         OpenJPEG/cio.c
         OpenJPEG/dwt.c
@@ -295,9 +295,10 @@ SET(OPENJPEG_SRCS
         OpenJPEG/openjpeg.h
 )
 
-
-
-SET(CROSSPLATFORM_SRCS
+#FILE(GLOB  HEADERS include/*.h)
+#FILE(GLOB  IMPLS impl/*.cpp)
+#FILE(GLOB  SRCS  src/*.cpp)
+set(CROSSPLATFORM_SRCS
         Dicom.Imaging.Codec.JpegLS.cpp
         Dicom.Imaging.Codec.Jpeg2000.cpp
         Dicom.Imaging.Codec.Jpeg_8.cpp
@@ -307,7 +308,7 @@ SET(CROSSPLATFORM_SRCS
         include/Person.h
         src/Person.cpp
         impl/personImpl.cpp
-        impl/personImpl.h
+        include/personImpl.h
         src/DicomTag.cpp
         include/DicomTag.h
         include/comm.h
@@ -329,10 +330,19 @@ SET(CROSSPLATFORM_SRCS
         src/DicomItem.cpp
         include/DicomItem.h
         src/ExplicitVrLittleEndianReader.cpp
+        src/ImplicitVrLittleEndianReader.cpp
         include/ExplicitVrLittleEndianReader.h
+        include/ImplicitVrLittleEndianReader.h
         src/TagValueReader.cpp
         include/TagValueReader.h
-        include/dicts.h src/DicomDictionary.cpp include/DicomDictionary.h src/dicts.cpp src/tagConstant.cpp src/DicomUID.cpp include/DicomUID.h src/DicomTS.cpp src/TransferFactory.cpp include/TransferFactory.h)
+        include/dicts.h src/DicomDictionary.cpp
+        include/DicomDictionary.h
+        src/dicts.cpp src/tagConstant.cpp
+        src/DicomUID.cpp
+        include/DicomUID.h
+        src/DicomTS.cpp
+        src/TransferFactory.cpp
+        include/TransferFactory.h)
 
 
 add_library(Dicom.Native-linux64 SHARED

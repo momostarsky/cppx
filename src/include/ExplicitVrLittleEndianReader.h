@@ -24,6 +24,17 @@ public:
     void ReadDataset(std::list<DicomItem> &items, uint32_t depath = 1);
 
 protected:
+
+
+    void parseSubs(DicomItem *ite);
+
+    void parseValueFieldWithUndefinedLength(FILE *reader, DicomItem *ite);
+
+    void parseSQSegmemnt(FILE *reader, DicomItem *ite, uint16_t sqGroupId, uint16_t sqElementId, std::list<DicomItem>& subItems);
+
+
+
+protected:
     FILE *mReader;
     size_t mDataLength;
 };

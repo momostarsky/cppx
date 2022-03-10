@@ -14,7 +14,7 @@ class DicomItem {
 public:
 
     DicomItem(uint16_t groupId, uint16_t elementId, DicomVR vr, uint32_t valueLength, uint32_t depth = 1,
-              const char *dataBuffer = nullptr);
+              const char *dataBuffer = nullptr, DicomItem* ptrParent= nullptr);
 
     DicomItem(const DicomItem &other);
 
@@ -50,7 +50,7 @@ public:
         return mDepth;
     }
 
-    int  getParent() const {
+    int getParent() const {
         return mParent;
     }
 
@@ -62,25 +62,35 @@ public:
         mSubs.push_back(item);
     }
 
-    void setParentId(int  pos) {
+    void setParentId(int pos) {
         mParent = pos;
     }
 
+    void setPtrParent(DicomItem *ptr) {
+        mPtrParent = ptr;
+    }
+
+    DicomItem*  GetPtrParent() const {
+        return  mPtrParent;
+    }
     std::list<DicomItem> &Subs() const {
         return const_cast<std::list<DicomItem> &>(mSubs);
     }
 
-    void ClearSubs(){
+    void ClearSubs() {
         mSubs.clear();
     }
+
 protected:
     DicomTag *mTag;
     DicomVR mVr;
     uint32_t mValueLength;
     char *mValueBuffer;
     uint32_t mDepth;
-    int  mParent;
+    int mParent;
     std::list<DicomItem> mSubs;
+
+    DicomItem *mPtrParent;
 
 
 };

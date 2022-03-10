@@ -10,6 +10,7 @@
 #include "include/DataSet.h"
 #include "include/DicomHeaderParser.h"
 #include "include/ExplicitVrLittleEndianReader.h"
+#include "include/DicomDictionary.h"
 
 namespace {
 
@@ -32,7 +33,6 @@ namespace {
         ASSERT_EQ(1000, dr.Postion());
 
     }
-
 
 
     TEST(TagTest, BytesSwapTests) {//NOLINT
@@ -69,41 +69,29 @@ namespace {
 
 
     TEST(TagTest, DicomHeaderParserTests) {//NOLINT
-        std::string dcmFile("/home/dhz/dcmStore/D-J2K.dcm");
+        const DicomDictionary *p = DicomDictionary::getDicomDictionary();
+        std::string dcmFile("/home/dhz/jpdata/goprod/dcmrw/dcmfiles/v1.2.1-pass1/D_CLUNIE_MR3_RLE.dcm");
 
         FILE *fd = fopen(dcmFile.c_str(), "rb");
 
-        std::list<DicomItem> items;
-        DicomHeaderParser::Parser(fd, items);
-        ASSERT_GE(items.size(), 1);
-        char prn[100]{0};
-        for (const auto &it: items) {
 
-            if (it.getVr() == *pVR_UL) {
 
-                uint32_t vl = bytesto_int4(it.getData());
-                snprintf(prn, 100, "0x%04hX,0x%04hX, VLen=%d, Value=%d", it.getTag()->Group(), it.getTag()->Element(),
-                         it.getValueLength(), vl);
+        DataSet ds(fd);
+        ds.ReadDataset();
 
-            } else if (it.getVr() == *pVR_OB) {
-                snprintf(prn, 100, "0x%04hX,0x%04hX, VLen=%d, Value=%d,%d", it.getTag()->Group(),
-                         it.getTag()->Element(),
-                         it.getValueLength(), it.getData()[0], it.getData()[1]);
 
+        int index = 0;
+        for (DicomItem it: ds.Items()) {
+            std::cout << index << "-->" << it.getParent() << "  " << it.toString() << "  ";
+            std::cout << "subs:" << it.Subs().size() << " ";
+            tagDescription_t descp = p->getTagDescriptions(it.getTag()->Group(), it.getTag()->Element());
+            if (descp.m_tagKeyword) {
+                std::cout << descp.m_tagKeyword << std::endl;
             } else {
-                std::string stext;
-                stext.append(it.getData());
-                snprintf(prn, 100, "0x%04hX,0x%04hX, VLen=%d, Value=%s", it.getTag()->Group(), it.getTag()->Element(),
-                         it.getValueLength(), stext.c_str());
-            }
-            std::cout << prn << std::endl;
+                std::cout << " Unknown " << std::endl;
+            };
+            index++;
         }
-
-
-        ExplicitVrLittleEndianReader dr(fd);
-        std::list<DicomItem> dataSet;
-        dr.ReadDataset(dataSet);
-
 
         fclose(fd);
 

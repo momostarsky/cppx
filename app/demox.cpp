@@ -13,97 +13,104 @@
 #include "include/DataSet.h"
 #include "include/DicomDictionary.h"
 #include "include/DicomUID.h"
+#include <sys/stat.h>
+#include <dirent.h>
+#include <cstring>
+
+void enum_files(const char *dirpath, std::list<std::string> &files);
 
 int main(int argc, char **argv) {
-
-
-    std::cout << DicomTransferSyntax::ImplicitVRLittleEndian.UID.uid << std::endl;
-    std::cout << DicomTransferSyntax::ImplicitVRLittleEndian.UID.name << std::endl;
-
     const DicomDictionary *p = DicomDictionary::getDicomDictionary();
-    std::string sx(10, '-');
-    std::cout << sx.c_str() << std::endl;
-    std::string dcmFile("/home/dhz/dcmStore/D-J2K.dcm");
+    std::list<std::string> allDcmFiles;
+    std::string rootdir("/home/dhz/jpdata/goprod/dcmrw/dcmfiles/v1.2.1-pass1");
 
-    FILE *fd = fopen(dcmFile.c_str(), "rb");
+    enum_files(rootdir.c_str(), allDcmFiles);
+
+    for (const auto &dcmfile: allDcmFiles) {
+
+        const char *data = dcmfile.c_str() + strlen(dcmfile.c_str()) - 4;
+        if (0 != strncasecmp(data, ".dcm", 4)) {
+            std::cout << "NOT DCM" << dcmfile << std::endl;
+            continue;
+        }
+        std::cout << "DcmFile:" << dcmfile << std::endl;
 
 
-    DataSet ds(fd);
-    ds.ReadDataset();
+        FILE *fd = fopen(dcmfile.c_str(), "rb");
 
-//    std::list<DicomItem> items;
-//    DicomHeaderParser::Parser(fd, items);
-//
-//
-//    ExplicitVrLittleEndianReader dr(fd);
-//    std::list<DicomItem> dataSet;
-//    dr.ReadDataset(dataSet);
-//    char prn[100]{0};
-    int index =0;
-    for (DicomItem it: ds.Items()) {
 
-//        if (it.getVr() == DicomVR::UL) {
-//
-//            uint32_t vl = bytesto_int4(it.getData());
-//            snprintf(prn, 100, "0x%04hX,0x%04hX, VLen=%d, Value=%d", it.getTag()->Group(), it.getTag()->Element(),
-//                     it.getValueLength(), vl);
-//
-//        } else if (it.getVr() == DicomVR::OB) {
-//            snprintf(prn, 100, "0x%04hX,0x%04hX, VLen=%d, Value=%d,%d", it.getTag()->Group(),
-//                     it.getTag()->Element(),
-//                     it.getValueLength(), it.getData()[0], it.getData()[1]);
-//
-//        } else {
-//            std::string stext;
-//            stext.append(it.getData());
-//            snprintf(prn, 100, "0x%04hX,0x%04hX, VLen=%d, Value=%s", it.getTag()->Group(), it.getTag()->Element(),
-//                     it.getValueLength(), stext.c_str());
-//        }
-        std::cout <<index << "-->" << it.getParent() << "  " <<  it.toString() << "  ";
+        DataSet ds(fd);
+        ds.ReadDataset();
 
-        std::cout <<"subs:" << it.Subs().size() << " ";
-//        for (auto sb: it.Subs()) {
-//            std::cout << "--" << sb.toString() << std::endl;
-//            for (auto sb2: sb.Subs()) {
-//                std::cout << "----" << sb2.toString() << std::endl;
-//                if (sb2.getValueLength() > 0 && (sb2.getVr().IsString || sb2.getVr().IsStringEncoded)) {
-//                    std::vector<std::string> vals;
-//                    DataSet::Read(sb2.getData(), sb2.getValueLength(), vals);
-//                    for (const auto& v: vals) {
-//                        std::cout << "------" << v << std::endl;
-//                    }
-//                }
-//            }
-//
-//            if (sb.getValueLength() > 0 && (sb.getVr().IsString || sb.getVr().IsStringEncoded)) {
-//                std::vector<std::string> vals;
-//                DataSet::Read(sb.getData(), sb.getValueLength(), vals);
-//                for (const auto& v: vals) {
-//                    std::cout << "--" << v << std::endl;
-//                }
-//            }
-//        }
-//
-//        if (it.getValueLength() > 0 && (it.getVr().IsString || it.getVr().IsStringEncoded)) {
-//            std::vector<std::string> vals;
-//            DataSet::Read(it.getData(), it.getValueLength(), vals);
-//            for (const auto& v: vals) {
-//                std::cout << "--" << v << std::endl;
-//            }
-//        }
 
-        tagDescription_t descp = p->getTagDescriptions(it.getTag()->Group(), it.getTag()->Element());
-        if (descp.m_tagKeyword) {
-            std::cout << descp.m_tagKeyword << std::endl;
-        } else {
-            std::cout << " Unknown " << std::endl;
-        };
 
-        index++;
+        int index = 0;
+        for (DicomItem it: ds.Items()) {
+            std::cout << index << "-->" << it.getParent() << "  " << it.toString() << "  ";
+            std::cout << "subs:" << it.Subs().size() << " ";
+            tagDescription_t descp = p->getTagDescriptions(it.getTag()->Group(), it.getTag()->Element());
+            if (descp.m_tagKeyword) {
+                std::cout << descp.m_tagKeyword << std::endl;
+            } else {
+                std::cout << " Unknown " << std::endl;
+            };
+            index++;
+        }
+
+
+        fclose(fd);
+
 
     }
 
-    fclose(fd);
 
     return 0;
+}
+
+
+/*!
+ * 遍历指定目录下的文件
+ * @param filename
+ * @param files
+ */
+void enum_files(const char *dirpath, std::list<std::string> &files) {
+    std::list<std::string> alldirs;
+    alldirs.emplace_back(dirpath);
+    char filepath[1025] = {0};
+    while (!alldirs.empty()) {
+
+        auto Iter_S = alldirs.begin();
+        std::string cdirname(*Iter_S);
+        DIR *dir = opendir(Iter_S->c_str());
+        alldirs.pop_front();
+        if (dir == nullptr) {
+            break;
+        }
+        struct dirent *ent;
+
+        while ((ent = readdir(dir)) != nullptr) {
+            if (strncasecmp(ent->d_name, ".", 1) == 0
+                || strncasecmp(ent->d_name, "..", 2) == 0
+                    ) {
+                continue;
+            }
+            memset(filepath, 0, 1025);
+            snprintf(filepath, 1024, "%s/%s", cdirname.c_str(), ent->d_name);
+            struct stat fstate{0};
+            stat(filepath, &fstate);
+            if (S_ISDIR(fstate.st_mode)) {
+
+                alldirs.emplace_back(filepath);
+            } else {
+
+                files.emplace_back(filepath);
+            }
+        }
+        closedir(dir);//用完了记得关闭掉
+
+    }
+
+    std::list<std::string> lstDefault;
+    lstDefault.swap(alldirs);
+
 }
