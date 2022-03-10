@@ -8,8 +8,6 @@
 #include <list>
 #include <sys/stat.h>
 #include "include/DicomItem.h"
-#include "include/DicomHeaderParser.h"
-#include "include/ExplicitVrLittleEndianReader.h"
 #include "include/DataSet.h"
 #include "include/DicomDictionary.h"
 #include "include/DicomUID.h"
@@ -22,8 +20,8 @@ void enum_files(const char *dirpath, std::list<std::string> &files);
 int main(int argc, char **argv) {
     const DicomDictionary *p = DicomDictionary::getDicomDictionary();
     std::list<std::string> allDcmFiles;
-    std::string rootdir("/home/dhz/jpdata/goprod/dcmrw/dcmfiles/v1.2.1-pass2");
-//    std::string rootdir("/home/dhz/jpdata/goprod/dcmrw/dcmfiles/v1.2.1-pass1");
+//    std::string rootdir("/home/dhz/jpdata/goprod/dcmrw/dcmfiles/v1.2.1-pass2");
+    std::string rootdir("/home/dhz/jpdata/goprod/dcmrw/dcmfiles/v1.2.1-pass1");
 
     enum_files(rootdir.c_str(), allDcmFiles);
 

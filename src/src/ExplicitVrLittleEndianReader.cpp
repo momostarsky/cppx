@@ -3,7 +3,6 @@
 //
 
 #include "../include/ExplicitVrLittleEndianReader.h"
-#include "../include/DicomItem.h"
 #include <iostream>
 #include <cassert>
 
@@ -149,65 +148,6 @@ void ExplicitVrLittleEndianReader::parseSubs(DicomItem *ite) {///NOLINT
 }
 
 
-void ExplicitVrLittleEndianReader::parseValueFieldWithUndefinedLength(FILE *reader, DicomItem *ite) {///NOLINT
-//    std::cout << " parse SQ,OB...  WithUndefinedLength: "  << ite->toString() << std::endl;
-    uint16_t groupId = 0;
-    uint16_t elementId = 0;
-    char skip4[4]{0};
-    char grp[2]{0};
-    char elm[2]{0};
-    // items.push_back(*ite);
-
-    while (true) {
-
-        size_t gl = fread(grp, 1, 2, reader);
-
-        assert(gl == 2);
-
-        size_t el = fread(elm, 1, 2, reader);
-        assert(el == 2);
-
-        groupId = bytesto_int2(grp);
-        elementId = bytesto_int2(elm);
-
-        if (groupId == 0xFFFE && elementId == 0xE0DD) {
-            //Sequence Delimitation Item
-            size_t sk = fread(skip4, 1, 4, reader);
-            assert(sk == 4);
-            DicomItem dicomItem(0xFFFE, 0xE0DD, *pVR_NONE, 4, ite->getDepth() + 1);
-            ite->addSubItem(dicomItem);
-//            std::cout << "--" << dicomItem.toString() << std::endl;
-            break;
-        }
-        if (groupId == 0xFFFE && elementId == 0xE000) {
-            // Item Tag
-            char vl[4];
-            size_t sk = fread(vl, 1, 4, reader);
-            assert(sk == 4);
-            uint32_t x = bytesto_int4(vl);
-            DicomItem dicomItem(0xFFFE, 0xE000, *pVR_NONE, x, ite->getDepth() + 1);
-            if (x == 0xFFFFFFFF) {
-                parseValueFieldWithUndefinedLength(reader, &dicomItem);
-            } else {
-                dicomItem.ReadData(reader);
-                if (ite->getVr() == *pVR_SQ) {
-                    parseSubs(&dicomItem);
-                }
-            }
-
-            ite->addSubItem(dicomItem);
-
-
-        } else {
-            //啥也不是
-            fseek(reader, -4, SEEK_CUR);
-            break;
-        }
-    }
-
-}
-
-
 void ExplicitVrLittleEndianReader::ReadDataset(std::list<DicomItem> &items, uint32_t depath) {///NOLINT
 
     uint16_t groupId = 0;
@@ -277,6 +217,8 @@ void ExplicitVrLittleEndianReader::ReadDataset(std::list<DicomItem> &items, uint
             break;
         }
         DicomItem *ptr = nullptr;
+
+
         if (DicomVR::ElementWithFixedFormat(*tagVr)) {
             size_t vrx = fread(vl2, 1, 2, mReader);
             assert(vrx == 2);
@@ -302,18 +244,18 @@ void ExplicitVrLittleEndianReader::ReadDataset(std::list<DicomItem> &items, uint
                 std::list<DicomItem> subs;
                 //Value Field has an Undefined Length and a Sequence Delimitation Item marks the end of the Value Field.
                 parseSQSegmemnt(mReader, ptr, subs);
-
                 for (const auto &ci: subs) {
-                    //  std::cout <<"MainLoop:" << ci.toString() << std::endl;
                     ptr->addSubItem(ci);
                 }
+
+
             } else if (valueLength > 0) {
                 ptr->ReadData(mReader);
-                //  parseSubs(ptr);
             }
 
         }
         items.push_back(*ptr);
+
     }
 
 

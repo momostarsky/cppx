@@ -28,8 +28,6 @@ protected:
 
     void parseSubs(DicomItem *ite);
 
-    void parseValueFieldWithUndefinedLength(FILE *reader, DicomItem *ite);
-
     void parseSQSegmemnt(FILE *reader, DicomItem *ite,  std::list<DicomItem>& subItems);
 
 
