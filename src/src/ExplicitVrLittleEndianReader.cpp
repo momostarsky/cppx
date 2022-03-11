@@ -90,10 +90,8 @@ ExplicitVrLittleEndianReader::parseSQ(FILE *reader, DicomItem *ite, std::list<Di
             char tipText[125] = {0};
             char tipFmtStr[] = "TagError:0x%04X,0x%04X, Vr=%s, AtPosition:0x%04X";
             snprintf(tipText, 124, tipFmtStr, groupId, elementId, vrstr.c_str(), cPositon);
-            std::cout << tipText << std::endl;
             mHasError= true;
-            mErrorMessage.append(tipText);
-
+            mErrorMessage.assign(tipText);
             break;
         }
 
@@ -222,7 +220,7 @@ void ExplicitVrLittleEndianReader::ReadDataset(std::list<DicomItem> &items, uint
             char tipFmtStr[] = "TagError:0x%04X,0x%04X, Vr=%s, AtPosition:0x%04X";
             snprintf(tipText, 124, tipFmtStr, groupId, elementId, vrstr.c_str(), cPositon);
             mHasError= true;
-            mErrorMessage.append(tipText);
+            mErrorMessage.assign(tipText);
             break;
         }
         DicomItem *ptr = nullptr;

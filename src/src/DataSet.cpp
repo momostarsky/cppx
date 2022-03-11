@@ -12,6 +12,7 @@
 #include "../include/ExplicitVrLittleEndianReader.h"
 #include "../include/TransferFactory.h"
 #include "../include/ImplicitVrLittleEndianReader.h"
+#include "../include/StringHelper.h"
 
 
 DataSet::DataSet(FILE *reader) : pReader(reader) {
@@ -105,12 +106,18 @@ void DataSet::ReadDataset(const uint32_t stopTag, bool expandTreeAsList) {
 
             size_t sz = hi.getValueLength();
 
-            if (hi.getData()[sz - 1] == 0x00 || hi.getData()[sz - 1] == 0x20) {
+
+            if (hi.getData()[sz - 1] == '\0' || hi.getData()[sz - 1] == 0x20) {
                 ts.append(hi.getData(), sz - 1);
             } else {
-                ts.append(hi.getData());
+                ts.append(hi.getData(), sz);
             }
-            std::cout << "TransferSyntaxUID:[" << ts << "]" << std::endl;
+
+
+//            std::cout << "TransferSyntaxUID-Value:[" << ts << "]" << std::endl;
+//
+//            StringHelper::ltrim(ts);
+//            std::cout << "TransferSyntaxUID-String:[" << ts << "]" << std::endl;
         }
     }
 
@@ -133,12 +140,15 @@ void DataSet::ReadDataset(const uint32_t stopTag, bool expandTreeAsList) {
         std::cout << "Unsportted  TransferSyntax UID: " << ts << std::endl;
         return;
     }
-  //  std::list<DicomItem> items;
+    //  std::list<DicomItem> items;
 
     if (transferSyntax.Endian == Endian::Little) {
         if (transferSyntax.IsExplicitVR) {
             ExplicitVrLittleEndianReader dr(pReader);
             dr.ReadDataset(dataSets);
+            if (dr.HasError()) {
+                std::cout << dr.ErrorMessage() << std::endl;
+            }
         } else {
             ImplicitVrLittleEndianReader dr(pReader);
             dr.ReadDataset(dataSets);
