@@ -14,6 +14,7 @@
 #include <sys/stat.h>
 #include <dirent.h>
 #include <cstring>
+#include <iomanip>
 
 void enum_files(const char *dirpath, std::list<std::string> &files);
 
@@ -45,7 +46,7 @@ int main(int argc, char **argv) {
 
         int index = 0;
         for (DicomItem it: ds.Items()) {
-            std::cout << index << "-->" << it.getParent() << "  " << it.toString() << "  ";
+            std::cout <<  std::setw(4) <<  std::left <<  index << "-->" << it.getParent() << "  " << it.toString() << "  ";
             std::cout << "subs:" << it.Subs().size() << " ";
             tagDescription_t descp = p->getTagDescriptions(it.getTag()->Group(), it.getTag()->Element());
             if (descp.m_tagKeyword) {

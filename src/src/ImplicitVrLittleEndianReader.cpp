@@ -3,7 +3,6 @@
 //
 
 #include "../include/ImplicitVrLittleEndianReader.h"
-#include "../include/DicomItem.h"
 #include <iostream>
 #include <cassert>
 

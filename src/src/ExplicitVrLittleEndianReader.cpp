@@ -8,13 +8,12 @@
 
 
 void
-ExplicitVrLittleEndianReader::parseSQSegmemnt(FILE *reader, DicomItem *ite, std::list<DicomItem> &subItems) {///NOLINT
+ExplicitVrLittleEndianReader::parseSQ(FILE *reader, DicomItem *ite, std::list<DicomItem> &subItems) {///NOLINT
     uint16_t groupId = 0;
     uint16_t elementId = 0;
     char skip4[4]{0};
     char grp[2]{0};
     char elm[2]{0};
-    char text[125] = {0};
     char vr[2] = {0};
     char vl[4] = {0};
     std::list<DicomItem> stacks;
@@ -85,7 +84,16 @@ ExplicitVrLittleEndianReader::parseSQSegmemnt(FILE *reader, DicomItem *ite, std:
         std::string vrstr(vr, 2);
         const DicomVR *tagVr = DicomVR::ParseVR(vrstr);
         if (tagVr == pVR_NONE) {
-            std::cout << "SQ  Invalidated  VR：" << vrstr << std::endl;
+
+            fseek(mReader, -6, SEEK_CUR);
+            long cPositon = ftell(mReader);
+            char tipText[125] = {0};
+            char tipFmtStr[] = "TagError:0x%04X,0x%04X, Vr=%s, AtPosition:0x%04X";
+            snprintf(tipText, 124, tipFmtStr, groupId, elementId, vrstr.c_str(), cPositon);
+            std::cout << tipText << std::endl;
+            mHasError= true;
+            mErrorMessage.append(tipText);
+
             break;
         }
 
@@ -117,7 +125,7 @@ ExplicitVrLittleEndianReader::parseSQSegmemnt(FILE *reader, DicomItem *ite, std:
             subItems.push_back(sqptr);
             if (valueLength == 0xFFFFFFFF) {
                 //Value Field has an Undefined Length and a Sequence Delimitation Item marks the end of the Value Field.
-                parseSQSegmemnt(mReader, &sqptr, subItems);
+                parseSQ(mReader, &sqptr, subItems);
             } else if (valueLength > 0) {
                 sqptr.ReadData(mReader);
             }
@@ -195,25 +203,26 @@ void ExplicitVrLittleEndianReader::ReadDataset(std::list<DicomItem> &items, uint
             continue;
         }
 
-        if (groupId == 0x7FE0 && elementId == 0x0010) {
-            // 回退4个字节。。
-            fseek(mReader, -4, SEEK_CUR);
-            break;
-        }
 
         size_t vrL = fread(vr, 1, 2, mReader);
         assert(vrL == 2);
         std::string vrstr(vr, 2);
 
-//        sprintf(tagText, tagFmt, groupId, elementId, vrstr.c_str());
-//        std::cout << tagText << std::endl;
 
         const DicomVR *tagVr = DicomVR::ParseVR(vrstr);
         if (tagVr == pVR_NONE) {
-            char text[125] = {0};
-            char fmtStr[] = "ReadDataset:0x%04X,0x%04X";
-            sprintf(text, fmtStr, groupId, elementId);
-            std::cout << "InvalidatedTag :" << text << " and  VR：" << vrstr << std::endl;
+            //---回退6个字节
+            fseek(mReader, -6, SEEK_CUR);
+
+            long cPositon = ftell(mReader);
+
+            assert(startPositon == cPositon);
+
+            char tipText[125] = {0};
+            char tipFmtStr[] = "TagError:0x%04X,0x%04X, Vr=%s, AtPosition:0x%04X";
+            snprintf(tipText, 124, tipFmtStr, groupId, elementId, vrstr.c_str(), cPositon);
+            mHasError= true;
+            mErrorMessage.append(tipText);
             break;
         }
         DicomItem *ptr = nullptr;
@@ -243,7 +252,7 @@ void ExplicitVrLittleEndianReader::ReadDataset(std::list<DicomItem> &items, uint
             if (valueLength == 0xFFFFFFFF) {
 
                 //Value Field has an Undefined Length and a Sequence Delimitation Item marks the end of the Value Field.
-                parseSQSegmemnt(mReader, ptr, subs);
+                parseSQ(mReader, ptr, subs);
 
 
             } else if (valueLength > 0) {
@@ -262,7 +271,7 @@ void ExplicitVrLittleEndianReader::ReadDataset(std::list<DicomItem> &items, uint
 
 }
 
-ExplicitVrLittleEndianReader::ExplicitVrLittleEndianReader(FILE *cin) : mReader(cin) {
+ExplicitVrLittleEndianReader::ExplicitVrLittleEndianReader(FILE *cin) : mReader(cin), mHasError(false) {
 
     assert(mReader != nullptr);
     fpos_t opx;
@@ -270,4 +279,8 @@ ExplicitVrLittleEndianReader::ExplicitVrLittleEndianReader(FILE *cin) : mReader(
     fseek(mReader, 0L, SEEK_END);
     mDataLength = ftell(mReader);
     fsetpos(mReader, &opx);
+}
+
+void ExplicitVrLittleEndianReader::parsePixelData(FILE *reader, DicomItem *ite, std::list<DicomItem> &subItems) {
+
 }

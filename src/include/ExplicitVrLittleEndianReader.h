@@ -23,18 +23,26 @@ public:
 
     void ReadDataset(std::list<DicomItem> &items, uint32_t depath = 1);
 
+    bool HasError() const { return mHasError; }
+
+    std::string ErrorMessage() const { return mErrorMessage; }
+
 protected:
 
 
     void parseSubs(DicomItem *ite);
 
-    void parseSQSegmemnt(FILE *reader, DicomItem *ite,  std::list<DicomItem>& subItems);
+    void parseSQ(FILE *reader, DicomItem *ite, std::list<DicomItem> &subItems);
 
+
+    void parsePixelData(FILE *reader, DicomItem *ite, std::list<DicomItem> &subItems);
 
 
 protected:
     FILE *mReader;
     size_t mDataLength;
+    bool mHasError;
+    std::string mErrorMessage;
 };
 
 

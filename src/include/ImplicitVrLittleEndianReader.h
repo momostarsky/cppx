@@ -23,12 +23,20 @@ public:
 
     void ReadDataset(std::list<DicomItem> &items, uint32_t depath = 1);
 
+    bool HasError() const { return mHasError; }
+
+    std::string ErrorMessage() const { return mErrorMessage; }
+
 protected:
     void  parseSubs(DicomItem *ite);
     void   parseValueFieldWithUndefinedLength(FILE *reader, DicomItem *ite);
 protected:
     FILE *mReader;
     size_t mDataLength;
+
+    bool mHasError;
+    std::string mErrorMessage;
+
 };
 
 
