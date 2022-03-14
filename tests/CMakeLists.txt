@@ -56,3 +56,30 @@ add_test(
         COMMAND
         ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}/cppx.unittest
 )
+
+
+
+file(GLOB DCM_ERROR  "${PROJECT_SOURCE_DIR}/tests/dcmfiles/error/*.dcm")
+file(GLOB DCM_GE "${PROJECT_SOURCE_DIR}/tests/dcmfiles/GE/*.dcm")
+file(GLOB DCM_OP  "${PROJECT_SOURCE_DIR}/tests/dcmfiles/other-pass/*.dcm")
+file(GLOB DCM_V1  "${PROJECT_SOURCE_DIR}/tests/dcmfiles/v1.2.1-pass1/*.dcm")
+file(GLOB DCM_V11  "${PROJECT_SOURCE_DIR}/tests/dcmfiles/v1.2.1-pass2/*.dcm")
+file(GLOB DCM_V2  "${PROJECT_SOURCE_DIR}/tests/dcmfiles/vr1.2-pass/*.dcm")
+file(GLOB DCM_V22  "${PROJECT_SOURCE_DIR}/tests/dcmfiles/vr1.2-pass2/*.dcm")
+
+
+message(STAUTS " ${DCM_ERROR}")
+message(STAUTS " ${DCM_GE}")
+message(STAUTS " ${DCM_OP}")
+message(STAUTS " ${DCM_V1}")
+message(STAUTS " ${DCM_V11}")
+message(STAUTS " ${DCM_V2}")
+message(STAUTS " ${DCM_V22}")
+
+file(COPY ${DCM_ERROR} DESTINATION  "${CMAKE_BINARY_DIR}/tests/dcmfiles/error/")
+file(COPY ${DCM_GE} DESTINATION  "${CMAKE_BINARY_DIR}/tests/dcmfiles/GE/")
+file(COPY ${DCM_OP} DESTINATION  "${CMAKE_BINARY_DIR}/tests/dcmfiles/other-pass/")
+file(COPY ${DCM_V1} DESTINATION  "${CMAKE_BINARY_DIR}/tests/dcmfiles/v1.2.1-pass1/")
+file(COPY ${DCM_V11} DESTINATION  "${CMAKE_BINARY_DIR}/tests/dcmfiles/v1.2.1-pass2/")
+file(COPY ${DCM_V2} DESTINATION  "${CMAKE_BINARY_DIR}/tests/dcmfiles/vr1.2-pass/")
+file(COPY ${DCM_V22} DESTINATION  "${CMAKE_BINARY_DIR}/tests/dcmfiles/vr1.2-pass2/")
