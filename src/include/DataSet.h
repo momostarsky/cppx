@@ -46,12 +46,18 @@ public:
     std::list<DicomItem>&  Items(){
         return  dataSets;
     }
+    bool HasError() const { return mHasError; }
+
+    std::string ErrorMessage() const { return mErrorMessage; }
 
 
 private:
     FILE *pReader;
     std::list<DicomItem> fileMeta;
     std::list<DicomItem> dataSets;
+
+    bool mHasError;
+    std::string mErrorMessage;
 };
 
 

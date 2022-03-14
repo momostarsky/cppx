@@ -342,7 +342,10 @@ set(CROSSPLATFORM_SRCS
         include/DicomUID.h
         src/DicomTS.cpp
         src/TransferFactory.cpp
-        include/TransferFactory.h)
+        include/TransferFactory.h
+        include/FileHelper.h
+        src/FileHelper.cpp
+        )
 
 
 add_library(Dicom.Native-linux64 SHARED

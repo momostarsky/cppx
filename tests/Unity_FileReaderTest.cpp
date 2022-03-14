@@ -8,9 +8,8 @@
 #include "include/comm.h"
 #include "include/DicomFileReader.h"
 #include "include/DataSet.h"
-#include "include/DicomHeaderParser.h"
-#include "include/ExplicitVrLittleEndianReader.h"
 #include "include/DicomDictionary.h"
+#include "include/FileHelper.h"
 
 namespace {
 
@@ -68,33 +67,98 @@ namespace {
     }
 
 
-    TEST(TagTest, DicomHeaderParserTests) {//NOLINT
+    TEST(TagTest, ExplicitVrLittleEndianReader_Test ) {//NOLINT
         const DicomDictionary *p = DicomDictionary::getDicomDictionary();
-        std::string dcmFile("/home/dhz/jpdata/goprod/dcmrw/dcmfiles/v1.2.1-pass1/D_CLUNIE_MR3_RLE.dcm");
+        std::list<std::string> allDcmFiles;
+        std::string rootdir("/home/dhz/jpdata/goprod/dcmrw/dcmfiles/v1.2.1-pass2");
 
-        FILE *fd = fopen(dcmFile.c_str(), "rb");
+        FileHelper:: enum_files(rootdir.c_str(), allDcmFiles);
+
+        for (const auto &dcmfile: allDcmFiles) {
+
+            const char *data = dcmfile.c_str() + strlen(dcmfile.c_str()) - 4;
+            if (0 != strncasecmp(data, ".dcm", 4)) {
+                std::cout << "NOT DCM" << dcmfile << std::endl;
+                continue;
+            }
+            std::cout << "DcmFile:" << dcmfile << std::endl;
 
 
-
-        DataSet ds(fd);
-        ds.ReadDataset();
+            FILE *fd = fopen(dcmfile.c_str(), "rb");
 
 
-        int index = 0;
-        for (DicomItem it: ds.Items()) {
-            std::cout << index << "-->" << it.getParent() << "  " << it.toString() << "  ";
-            std::cout << "subs:" << it.Subs().size() << " ";
-            tagDescription_t descp = p->getTagDescriptions(it.getTag()->Group(), it.getTag()->Element());
-            if (descp.m_tagKeyword) {
-                std::cout << descp.m_tagKeyword << std::endl;
-            } else {
-                std::cout << " Unknown " << std::endl;
-            };
-            index++;
+            DataSet ds(fd);
+            ds.ReadDataset();
+
+            ASSERT_TRUE(!ds.HasError());
+
+
+            int index = 0;
+            for (DicomItem it: ds.Items()) {
+                std::cout <<  std::setw(4) <<  std::left <<  index << "-->" << it.getParent() << "  " << it.toString() << "  ";
+                std::cout << "subs:" << it.Subs().size() << " ";
+                tagDescription_t descp = p->getTagDescriptions(it.getTag()->Group(), it.getTag()->Element());
+                if (descp.m_tagKeyword) {
+                    std::cout << descp.m_tagKeyword << std::endl;
+                } else {
+                    std::cout << " Unknown " << std::endl;
+                };
+                index++;
+            }
+
+
+            fclose(fd);
+
+
         }
 
-        fclose(fd);
 
     }
+    TEST(TagTest, ExplicitVrLittleEndianReader2_Test ) {//NOLINT
+        const DicomDictionary *p = DicomDictionary::getDicomDictionary();
+        std::list<std::string> allDcmFiles;
+        std::string rootdir("/home/dhz/jpdata/goprod/dcmrw/dcmfiles/v1.2.1-pass1");
 
+        FileHelper:: enum_files(rootdir.c_str(), allDcmFiles);
+
+        for (const auto &dcmfile: allDcmFiles) {
+
+            const char *data = dcmfile.c_str() + strlen(dcmfile.c_str()) - 4;
+            if (0 != strncasecmp(data, ".dcm", 4)) {
+                std::cout << "NOT DCM" << dcmfile << std::endl;
+                continue;
+            }
+            std::cout << "DcmFile:" << dcmfile << std::endl;
+
+
+            FILE *fd = fopen(dcmfile.c_str(), "rb");
+
+
+            DataSet ds(fd);
+            ds.ReadDataset();
+
+            ASSERT_TRUE(!ds.HasError());
+
+
+            int index = 0;
+            for (DicomItem it: ds.Items()) {
+                std::cout <<  std::setw(4) <<  std::left <<  index << "-->" << it.getParent() << "  " << it.toString() << "  ";
+                std::cout << "subs:" << it.Subs().size() << " ";
+                tagDescription_t descp = p->getTagDescriptions(it.getTag()->Group(), it.getTag()->Element());
+                if (descp.m_tagKeyword) {
+                    std::cout << descp.m_tagKeyword << std::endl;
+                } else {
+                    std::cout << " Unknown " << std::endl;
+                };
+                index++;
+            }
+
+
+            fclose(fd);
+
+
+        }
+
+
+    }
 }

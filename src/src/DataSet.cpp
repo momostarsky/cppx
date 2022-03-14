@@ -12,10 +12,9 @@
 #include "../include/ExplicitVrLittleEndianReader.h"
 #include "../include/TransferFactory.h"
 #include "../include/ImplicitVrLittleEndianReader.h"
-#include "../include/StringHelper.h"
 
 
-DataSet::DataSet(FILE *reader) : pReader(reader) {
+DataSet::DataSet(FILE *reader) : pReader(reader), mHasError(false) {
 }
 
 
@@ -148,6 +147,8 @@ void DataSet::ReadDataset(const uint32_t stopTag, bool expandTreeAsList) {
             dr.ReadDataset(dataSets);
             if (dr.HasError()) {
                 std::cout << dr.ErrorMessage() << std::endl;
+                this->mHasError= true;
+                this->mErrorMessage= dr.ErrorMessage();
             }
         } else {
             ImplicitVrLittleEndianReader dr(pReader);
@@ -179,11 +180,11 @@ DataSet::~DataSet() {
     }
 }
 
-DataSet::DataSet(const char *pBuffer, size_t bufferSize) {
+DataSet::DataSet(const char *pBuffer, size_t bufferSize) : mHasError(false) {
     pReader = fmemopen((void *) pBuffer, bufferSize, "rb");
 }
 
-DataSet::DataSet(string &filePath) {
+DataSet::DataSet(string &filePath) : mHasError(false) {
     pReader = fopen(filePath.c_str(), "rb");
 }
 
