@@ -36,6 +36,16 @@ file(GLOB cppx_tests_src "${PROJECT_SOURCE_DIR}/tests/*.cpp")
 
 message(STATUS  "${PROJECT_SOURCE_DIR}/src")
 
+
+find_package(DCMTK)
+if (${DCMTK_FOUND})
+    message(STATUS "DCMTK found. Interoperability tests enabled")
+else (${DCMTK_FOUND})
+    add_definitions(-DDISABLE_DCMTK_INTEROPERABILITY_TEST)
+    message(WARNING "WARNING: DCMTK not found. Disabling interoperability tests")
+endif (${DCMTK_FOUND})
+
+
 # Now simply link against gtest or gtest_main as needed. Eg
 add_executable(
         cppx.unittest
@@ -43,11 +53,13 @@ add_executable(
         ${cppx_tests_src}
         Unity_TagTest.cpp Unity_StringTest.cpp Unity_FileReaderTest.cpp)
 
-target_include_directories(cppx.unittest  PRIVATE ${PROJECT_SOURCE_DIR}/src )
+target_include_directories(cppx.unittest  PRIVATE ${PROJECT_SOURCE_DIR}/src  ${DCMTK_INCLUDE_DIRS} )
 target_link_libraries(
         cppx.unittest
         gtest_main
         Dicom.Native-linux64
+
+        dcmdata dcmimage
 )
 
 add_test(

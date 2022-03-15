@@ -14,7 +14,7 @@ class DicomItem {
 public:
 
     DicomItem(uint16_t groupId, uint16_t elementId, DicomVR vr, uint32_t valueLength, uint32_t depth = 1,
-              const char *dataBuffer = nullptr, DicomItem* ptrParent= nullptr);
+              const char *dataBuffer = nullptr, DicomItem *ptrParent = nullptr);
 
     DicomItem(const DicomItem &other);
 
@@ -29,7 +29,7 @@ public:
 
     virtual  ~DicomItem();
 
-    DicomTag *getTag() const {
+      DicomTag*    getTag() const {
         return mTag;
     }
 
@@ -70,9 +70,10 @@ public:
         mPtrParent = ptr;
     }
 
-    DicomItem*  GetPtrParent() const {
-        return  mPtrParent;
+    DicomItem *GetPtrParent() const {
+        return mPtrParent;
     }
+
     std::list<DicomItem> &Subs() const {
         return const_cast<std::list<DicomItem> &>(mSubs);
     }

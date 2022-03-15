@@ -95,10 +95,10 @@ void DataSet::ReadDataset(const uint32_t stopTag, bool expandTreeAsList) {
     this->fileMeta.clear();
     this->dataSets.clear();
     DicomHeaderParser::Parser(pReader, this->fileMeta);
-    std::cout << "Begin DicomFileMetaInformation" << std::endl;
+//    std::cout << "Begin DicomFileMetaInformation" << std::endl;
     std::string ts;
     for (auto &hi: this->fileMeta) {
-        std::cout << hi.toString() << std::endl;
+//        std::cout << hi.toString() << std::endl;
         auto ctag = hi.getTag();
         if (ctag->Group() == 0x0002 && ctag->Element() == 0x0010) {
 
@@ -121,22 +121,29 @@ void DataSet::ReadDataset(const uint32_t stopTag, bool expandTreeAsList) {
     }
 
 
-    std::cout << "End DicomFileMetaInformation" << std::endl;
+//    std::cout << "End DicomFileMetaInformation" << std::endl;
 
     if (ts.empty()) {
-        std::cout << "  TransferSyntax is Emtpty " << std::endl;
+        this->mHasError= true;
+        this->mErrorMessage= "TransferSyntax is Emtpty";
+
+
         return;
     }
     auto pts = TransferFactory::getTransferFactory();
 
     DicomUID tsuid = pts->GetDicomUID(ts);
     if (tsuid == DicomUID::Empty) {
-        std::cout << "Find TransferSyntax Failed " << std::endl;
+        this->mHasError= true;
+        this->mErrorMessage= "Find TransferSyntax Failed";
+
         return;
     }
     DicomTransferSyntax transferSyntax = pts->GetTransferSyntax(tsuid);
     if (transferSyntax.UID == DicomUID::Empty) {
-        std::cout << "Unsportted  TransferSyntax UID: " << ts << std::endl;
+        this->mHasError= true;
+        this->mErrorMessage= "Unsportted  TransferSyntax UID:" +ts ;
+
         return;
     }
     //  std::list<DicomItem> items;
@@ -155,7 +162,9 @@ void DataSet::ReadDataset(const uint32_t stopTag, bool expandTreeAsList) {
             dr.ReadDataset(dataSets);
         }
     } else {
-        std::cout << "UnImplimentions of BigEndian" << ts << std::endl;
+        this->mHasError= true;
+        this->mErrorMessage= "UUnImplimentions of BigEndian:" +ts ;
+
         return;
     }
 

@@ -16,7 +16,14 @@ public:
     DicomTag(uint16_t group, uint16_t element, std::string &privateCreator);
 
 
-    explicit   operator uint32_t() const;
+    explicit operator uint32_t() const {
+        uint32_t t = mGroup;
+        t = t << 16 | mElement;
+        return t;
+    }
+
+
+
 
     DicomTag(const DicomTag &);
 

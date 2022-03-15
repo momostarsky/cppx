@@ -19,16 +19,22 @@ int main(int argc, char **argv) {
     std::list<std::string> allDcmFiles;
     std::string rootdir("/home/dhz/jpdata/goprod/dcmrw/dcmfiles/v1.2.1-pass2");
 //    std::string rootdir("/home/dhz/jpdata/goprod/dcmrw/dcmfiles/v1.2.1-pass1");
-
+//MR-MONO2-12-shoulder.dcm
    FileHelper:: enum_files(rootdir.c_str(), allDcmFiles);
 
+   const char*  filestr="MR-MONO2-12-shoulder.dcm";
+   size_t tl = strlen("MR-MONO2-12-shoulder.dcm");
     for (const auto &dcmfile: allDcmFiles) {
 
-        const char *data = dcmfile.c_str() + strlen(dcmfile.c_str()) - 4;
-        if (0 != strncasecmp(data, ".dcm", 4)) {
-            std::cout << "NOT DCM" << dcmfile << std::endl;
+
+        const char *data = dcmfile.c_str() + strlen(dcmfile.c_str()) - tl ;
+
+        if (0 != strncasecmp(data+ strlen(data)-tl , filestr,  tl )) {
+
             continue;
         }
+
+        //MR-MONO2-12-shoulder.dcm
         std::cout << "DcmFile:" << dcmfile << std::endl;
 
 

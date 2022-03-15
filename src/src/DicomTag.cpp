@@ -18,11 +18,7 @@ DicomTag::DicomTag(uint16_t group, uint16_t element, std::string& privateCreator
 
 
 
-DicomTag::operator uint32_t() const {
-    uint32_t t = mGroup;
-    t = t << 16 | mElement;
-    return t;
-}
+
 
 std::string DicomTag::toString() const {
     char text[14] = {0};

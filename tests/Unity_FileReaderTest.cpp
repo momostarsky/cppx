@@ -11,27 +11,18 @@
 #include "include/DicomDictionary.h"
 #include "include/FileHelper.h"
 
+#ifndef DISABLE_DCMTK_INTEROPERABILITY_TEST
+
+#include <dcmtk/dcmdata/dcdatset.h>
+#include <dcmtk/dcmdata/dcfilefo.h>
+#include <dcmtk/dcmdata/dcistrmb.h>
+#include <dcmtk/dcmdata/dcrledrg.h>
+#include <dcmtk/dcmimgle/dcmimage.h>
+#include <dcmtk/dcmimage/diregist.h>
+#include <dcmtk/dcmdata/dcovlay.h>
+
+#endif
 namespace {
-
-    TEST(TagTest, FileStreamReader) {//NOLINT
-        std::string dcmFile("/home/dhz/dcmStore/D-J2K.dcm");
-        DicomFileReader dr(dcmFile);
-        ASSERT_EQ(118248, dr.Length());
-        ASSERT_EQ(0, dr.Postion());
-        ASSERT_EQ(true, dr.Seekable());
-        char buffer[1000];
-        bool rok = dr.Read(buffer, 1000);
-        ASSERT_EQ(true, rok);
-        ASSERT_EQ(118248, dr.Length());
-        ASSERT_EQ(1000, dr.Postion());
-        bool ok = dr.Seek(4, SeekOnce::Current);
-        ASSERT_EQ(true, ok);
-        ASSERT_EQ(1004, dr.Postion());
-        bool ok2 = dr.Seek(-4, SeekOnce::Current);
-        ASSERT_EQ(true, ok2);
-        ASSERT_EQ(1000, dr.Postion());
-
-    }
 
 
     TEST(TagTest, BytesSwapTests) {//NOLINT
@@ -67,18 +58,23 @@ namespace {
     }
 
 
-    TEST(TagTest, ExplicitVrLittleEndianReader_Test ) {//NOLINT
+    TEST(TagTest, ExplicitVrLittleEndianReader_Test) {//NOLINT
         const DicomDictionary *p = DicomDictionary::getDicomDictionary();
         std::list<std::string> allDcmFiles;
         std::string rootdir("./dcmfiles/v1.2.1-pass2");
 
-        FileHelper:: enum_files(rootdir.c_str(), allDcmFiles);
+        FileHelper::enum_files(rootdir.c_str(), allDcmFiles);
+
+
+        const char *filestr = ".dcm";// "MR-MONO2-12-shoulder.dcm";
+        size_t tl = strlen(filestr);
+
 
         for (const auto &dcmfile: allDcmFiles) {
 
-            const char *data = dcmfile.c_str() + strlen(dcmfile.c_str()) - 4;
-            if (0 != strncasecmp(data, ".dcm", 4)) {
-                std::cout << "NOT DCM" << dcmfile << std::endl;
+            const char *data = dcmfile.c_str() + strlen(dcmfile.c_str()) - tl;
+            if (0 != strncasecmp(data, filestr, tl)) {
+
                 continue;
             }
             std::cout << "DcmFile:" << dcmfile << std::endl;
@@ -89,48 +85,62 @@ namespace {
 
             DataSet ds(fd);
             ds.ReadDataset();
+            if (ds.HasError()) {
+                std::cout << ds.ErrorMessage() << std::endl;
+            }
 
             ASSERT_TRUE(!ds.HasError());
 
 
-            int index = 0;
-            for (DicomItem it: ds.Items()) {
-                std::cout <<  std::setw(4) <<  std::left <<  index << "-->" << it.getParent() << "  " << it.toString() << "  ";
-                std::cout << "subs:" << it.Subs().size() << " ";
-                tagDescription_t descp = p->getTagDescriptions(it.getTag()->Group(), it.getTag()->Element());
-                if (descp.m_tagKeyword) {
-                    std::cout << descp.m_tagKeyword << std::endl;
-                } else {
-                    std::cout << " Unknown " << std::endl;
-                };
-                index++;
-            }
-
-
             fclose(fd);
+            DcmFileFormat fileformat;
+            OFCondition status = fileformat.loadFile(dcmfile.c_str());
+            ASSERT_TRUE(OFTrue == status.good());
+
+            DcmDataset *dcmDataset = fileformat.getDataset();
+
+
+            DcmObject *next = dcmDataset->nextInContainer(nullptr);
+            //遍历Tag（0008——7FE0）
+            while (next != nullptr) {
+                uint16_t grop = next->getGTag();
+                uint16_t elem = next->getETag();
+
+                std::_List_iterator<DicomItem> iter1 = std::find_if(ds.Items().begin(), ds.Items().end(),
+                                                                    [grop, elem](const DicomItem &n) {
+                                                                        return n.getTag()->Element() == elem &&
+                                                                               n.getTag()->Group() == grop;
+                                                                    });
+
+
+                ASSERT_TRUE(iter1 != std::end(ds.Items()));
+                std::cout << iter1->toString() << std::endl;
+                next = dcmDataset->nextInContainer(next);
+            }
 
 
         }
 
 
     }
-    TEST(TagTest, ExplicitVrLittleEndianReader2_Test ) {//NOLINT
+
+    TEST(TagTest, ExplicitVrLittleEndianReader2_Test) {//NOLINT
 
         const DicomDictionary *p = DicomDictionary::getDicomDictionary();
         std::list<std::string> allDcmFiles;
         std::string rootdir("./dcmfiles/v1.2.1-pass1");
 
-        FileHelper:: enum_files(rootdir.c_str(), allDcmFiles);
+        const char *filestr = ".dcm";// "MR-MONO2-12-shoulder.dcm";
+        size_t tl = strlen(filestr);
+
+        FileHelper::enum_files(rootdir.c_str(), allDcmFiles);
 
         for (const auto &dcmfile: allDcmFiles) {
 
             const char *data = dcmfile.c_str() + strlen(dcmfile.c_str()) - 4;
-            if (0 != strncasecmp(data, ".dcm", 4)) {
-                std::cout << "NOT DCM" << dcmfile << std::endl;
+            if (0 != strncasecmp(data, filestr, tl)) {
                 continue;
             }
-            std::cout << "DcmFile:" << dcmfile << std::endl;
-
 
             FILE *fd = fopen(dcmfile.c_str(), "rb");
 
@@ -139,24 +149,28 @@ namespace {
             ds.ReadDataset();
 
             ASSERT_TRUE(!ds.HasError());
-
-
-            int index = 0;
-            for (DicomItem it: ds.Items()) {
-                std::cout <<  std::setw(4) <<  std::left <<  index << "-->" << it.getParent() << "  " << it.toString() << "  ";
-                std::cout << "subs:" << it.Subs().size() << " ";
-                tagDescription_t descp = p->getTagDescriptions(it.getTag()->Group(), it.getTag()->Element());
-                if (descp.m_tagKeyword) {
-                    std::cout << descp.m_tagKeyword << std::endl;
-                } else {
-                    std::cout << " Unknown " << std::endl;
-                };
-                index++;
-            }
-
-
             fclose(fd);
+            DcmFileFormat fileformat;
+            OFCondition status = fileformat.loadFile(dcmfile.c_str());
+            ASSERT_TRUE(OFTrue == status.good());
 
+            DcmDataset *dcmDataset = fileformat.getDataset();
+
+
+            DcmObject *next = dcmDataset->nextInContainer(nullptr);
+            //遍历Tag（0008——7FE0）
+            while (next != nullptr) {
+                uint16_t grop = next->getGTag();
+                uint16_t elem = next->getETag();
+                std::_List_iterator<DicomItem> iter1 = std::find_if(ds.Items().begin(), ds.Items().end(),
+                                                                    [grop, elem](const DicomItem &n) {
+                                                                        return n.getTag()->Element() == elem &&
+                                                                               n.getTag()->Group() == grop;
+                                                                    });
+                ASSERT_TRUE(iter1 != std::end(ds.Items()));
+                std::cout << iter1->toString() << std::endl;
+                next = dcmDataset->nextInContainer(next);
+            }
 
         }
 

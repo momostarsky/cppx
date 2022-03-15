@@ -5,7 +5,7 @@
 namespace {
 
 
-    TEST(Exp1Test, PersonInfo) {
+    TEST(Exp1Test, PersonInfo) {///NOLINT
         std::string name("dhanzhang");
         std::size_t age(30);
         bool sex(false);
