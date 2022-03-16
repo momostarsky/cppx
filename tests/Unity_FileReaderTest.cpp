@@ -114,7 +114,7 @@ namespace {
 
 
                 ASSERT_TRUE(iter1 != std::end(ds.Items()));
-                std::cout << iter1->toString() << std::endl;
+                std::cout <<(uint32_t) *iter1->getTag() << " And "<< iter1->toString() << std::endl;
                 next = dcmDataset->nextInContainer(next);
             }
 

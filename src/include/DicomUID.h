@@ -7,6 +7,7 @@
 
 
 #include <string>
+#include "Endian.h"
 
 enum class DicomUidType {
     TransferSyntax,
@@ -5168,29 +5169,6 @@ public:
 
 };
 
-struct Endian {
-public:
-    static struct Endian Big;
-    static struct Endian Little;
-    static struct Endian Network;
-
-    explicit Endian(bool isBigEndian) : _isBigEndian(isBigEndian) {
-    }
-
-    Endian() : _isBigEndian(false) {
-        std::uint16_t m_endianCheck = 0x00FF;
-        auto *pBytePointer = (std::uint8_t *) &m_endianCheck;
-        std::uint8_t px = pBytePointer[0];
-        _isBigEndian = px == 0xff;
-    }
-
-    bool operator==(const struct Endian &other) {
-        return this->_isBigEndian == other._isBigEndian;
-    }
-
-private:
-    bool _isBigEndian;
-};
 
 struct DicomTransferSyntax {
 public:
@@ -5201,7 +5179,7 @@ public:
     bool IsLossy;
     std::string LossyCompressionMethod;
     bool IsDeflate;
-    struct Endian Endian;
+    tByteOrdering Endian;
     bool SwapPixelData;
 
     bool operator==(const DicomTransferSyntax &other) const;

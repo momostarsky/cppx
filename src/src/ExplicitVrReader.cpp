@@ -2,13 +2,13 @@
 // Created by dhz on 2022/1/7.
 //
 
-#include "../include/ExplicitVrLittleEndianReader.h"
+#include "../include/ExplicitVrReader.h"
 #include <iostream>
 #include <cassert>
 
 
 void
-ExplicitVrLittleEndianReader::parseSQ(FILE *reader, DicomItem *ite, std::list<DicomItem> &subItems) {///NOLINT
+ExplicitVrReader::parseSQ(FILE *reader, DicomItem *ite, std::list<DicomItem> &subItems) {///NOLINT
     uint16_t groupId = 0;
     uint16_t elementId = 0;
     char skip4[4]{0};
@@ -35,7 +35,8 @@ ExplicitVrLittleEndianReader::parseSQ(FILE *reader, DicomItem *ite, std::list<Di
 
         groupId = bytesto_int2(grp);
         elementId = bytesto_int2(elm);
-
+        groupId = EndianConvert::adjustEndian(groupId, mByteOrdering);
+        elementId = EndianConvert::adjustEndian(elementId, mByteOrdering);
         uint32_t cDepth = cptr->getDepth() + 1;
 
 
@@ -64,12 +65,13 @@ ExplicitVrLittleEndianReader::parseSQ(FILE *reader, DicomItem *ite, std::list<Di
             size_t sk = fread(vl, 1, 4, reader);
             assert(sk == 4);
             uint32_t x = bytesto_int4(vl);
+            x = EndianConvert::adjustEndian(x, mByteOrdering);
             DicomItem dicomItem(0xFFFE, 0xE000, *pVR_NONE, x, cDepth);
             if (x == 0xFFFFFFFF) {
                 stacks.push_front(dicomItem);
             } else if (x > 0) {
                 dicomItem.ReadData(reader);
-                //  parseSubs(&dicomItem);
+                parseSubs(&dicomItem, subItems);
             }
             subItems.push_back(dicomItem);
             for (const auto &si: dicomItem.Subs()) {
@@ -90,7 +92,7 @@ ExplicitVrLittleEndianReader::parseSQ(FILE *reader, DicomItem *ite, std::list<Di
             char tipText[125] = {0};
             char tipFmtStr[] = "TagError:0x%04X,0x%04X, Vr=%s, AtPosition:0x%04X";
             snprintf(tipText, 124, tipFmtStr, groupId, elementId, vrstr.c_str(), cPositon);
-            mHasError= true;
+            mHasError = true;
             mErrorMessage.assign(tipText);
             break;
         }
@@ -104,7 +106,8 @@ ExplicitVrLittleEndianReader::parseSQ(FILE *reader, DicomItem *ite, std::list<Di
         if (DicomVR::ElementWithFixedFormat(*tagVr)) {
             size_t vrx = fread(vl2, 1, 2, mReader);
             assert(vrx == 2);
-            valueLength = bytesto_int2(vl2);
+            uint16_t vl16 = bytesto_int2(vl2);
+            valueLength = EndianConvert::adjustEndian(vl16, mByteOrdering);
             DicomItem xptr(groupId, elementId, *tagVr, valueLength, cDepth);
             if (valueLength > 0 && valueLength != 0xFFFF) {
                 xptr.ReadData(mReader);
@@ -119,6 +122,7 @@ ExplicitVrLittleEndianReader::parseSQ(FILE *reader, DicomItem *ite, std::list<Di
             size_t vrx = fread(vl4, 1, 4, mReader);
             assert(vrx == 4);
             valueLength = bytesto_int4(vl4);
+            valueLength = EndianConvert::adjustEndian(valueLength, mByteOrdering);
             DicomItem sqptr(groupId, elementId, *tagVr, valueLength, cDepth);
             subItems.push_back(sqptr);
             if (valueLength == 0xFFFFFFFF) {
@@ -126,13 +130,14 @@ ExplicitVrLittleEndianReader::parseSQ(FILE *reader, DicomItem *ite, std::list<Di
                 parseSQ(mReader, &sqptr, subItems);
             } else if (valueLength > 0) {
                 sqptr.ReadData(mReader);
+                parseSubs(&sqptr, subItems);
             }
         }
     }
 }
 
 
-void ExplicitVrLittleEndianReader::parseSubs(DicomItem *ite) {///NOLINT
+void ExplicitVrReader::parseSubs(DicomItem *ite, std::list<DicomItem> &subItems) {///NOLINT
     if (ite->getValueLength() <= 8) {
         // Group,Element,VR,XX
         // 合格的DicomItem 的最小字节数都是8 个字节
@@ -143,18 +148,16 @@ void ExplicitVrLittleEndianReader::parseSubs(DicomItem *ite) {///NOLINT
     }
 
     FILE *stream = fmemopen((void *) ite->getData(), ite->getValueLength(), "rb");
-    ExplicitVrLittleEndianReader subReader(stream);
-    std::list<DicomItem> subs;
-    subReader.ReadDataset(subs, ite->getDepth());
+    ExplicitVrReader subReader(stream, mByteOrdering);
+
+    subReader.ReadDataset(subItems, ite->getDepth() + 1);
     fclose(stream);
-    for (auto &cp: subs) {
-        ite->addSubItem(cp);
-    }
+
 
 }
 
 
-void ExplicitVrLittleEndianReader::ReadDataset(std::list<DicomItem> &items, uint32_t depath) {///NOLINT
+void ExplicitVrReader::ReadDataset(std::list<DicomItem> &items, uint32_t depath) {///NOLINT
 
     uint16_t groupId = 0;
     uint16_t elementId = 0;
@@ -192,12 +195,22 @@ void ExplicitVrLittleEndianReader::ReadDataset(std::list<DicomItem> &items, uint
         }
 
         groupId = bytesto_int2(grp);
+        groupId = EndianConvert::adjustEndian(groupId, mByteOrdering);
         size_t el = fread(elm, 1, 2, mReader);
         assert(el == 2);
         elementId = bytesto_int2(elm);
-        if (groupId == 0xFFFE && elementId == 0xE000) {
+        elementId = EndianConvert::adjustEndian(elementId, mByteOrdering);
+        if (groupId == 0xFFFE && (elementId == 0xE000 || elementId == 0xE00D || elementId == 0xE0DD)
+                ) {
             //---向前跳4个字节
-            fseek(mReader, 4, SEEK_CUR);
+
+            size_t vrx = fread(vl4, 1, 4, mReader);
+            assert(vrx == 4);
+            valueLength = bytesto_int4(vl4);
+            valueLength = EndianConvert::adjustEndian(valueLength, mByteOrdering);
+            DicomItem sep(groupId, elementId, *pVR_NONE, valueLength, depath);
+            items.push_back(sep);
+
             continue;
         }
 
@@ -219,7 +232,7 @@ void ExplicitVrLittleEndianReader::ReadDataset(std::list<DicomItem> &items, uint
             char tipText[125] = {0};
             char tipFmtStr[] = "TagError:0x%04X,0x%04X, Vr=%s, AtPosition:0x%04X";
             snprintf(tipText, 124, tipFmtStr, groupId, elementId, vrstr.c_str(), cPositon);
-            mHasError= true;
+            mHasError = true;
             mErrorMessage.assign(tipText);
             break;
         }
@@ -229,7 +242,9 @@ void ExplicitVrLittleEndianReader::ReadDataset(std::list<DicomItem> &items, uint
         if (DicomVR::ElementWithFixedFormat(*tagVr)) {
             size_t vrx = fread(vl2, 1, 2, mReader);
             assert(vrx == 2);
-            valueLength = bytesto_int2(vl2);
+            uint16_t shortLen = bytesto_int2(vl2);
+
+            valueLength = EndianConvert::adjustEndian(shortLen, mByteOrdering);
             ptr = new DicomItem(groupId, elementId, *tagVr, valueLength, depath);
             if (valueLength == 0xFFFFFFFF) {
                 break;
@@ -246,7 +261,10 @@ void ExplicitVrLittleEndianReader::ReadDataset(std::list<DicomItem> &items, uint
             size_t vrx = fread(vl4, 1, 4, mReader);
             assert(vrx == 4);
             valueLength = bytesto_int4(vl4);
+            valueLength = EndianConvert::adjustEndian(valueLength, mByteOrdering);
             ptr = new DicomItem(groupId, elementId, *tagVr, valueLength, depath);
+
+
             if (valueLength == 0xFFFFFFFF) {
 
                 //Value Field has an Undefined Length and a Sequence Delimitation Item marks the end of the Value Field.
@@ -254,8 +272,14 @@ void ExplicitVrLittleEndianReader::ReadDataset(std::list<DicomItem> &items, uint
 
 
             } else if (valueLength > 0) {
+
+
                 ptr->ReadData(mReader);
+
+                parseSubs(ptr, subs);
+
             }
+
 
         }
         items.push_back(*ptr);
@@ -269,7 +293,10 @@ void ExplicitVrLittleEndianReader::ReadDataset(std::list<DicomItem> &items, uint
 
 }
 
-ExplicitVrLittleEndianReader::ExplicitVrLittleEndianReader(FILE *cin) : mReader(cin), mHasError(false) {
+ExplicitVrReader::ExplicitVrReader(FILE *cin, tByteOrdering byteOrdering) : mReader(cin),
+                                                                            mHasError(false),
+                                                                            mByteOrdering(
+                                                                                    byteOrdering) {
 
     assert(mReader != nullptr);
     fpos_t opx;
@@ -279,6 +306,3 @@ ExplicitVrLittleEndianReader::ExplicitVrLittleEndianReader(FILE *cin) : mReader(
     fsetpos(mReader, &opx);
 }
 
-void ExplicitVrLittleEndianReader::parsePixelData(FILE *reader, DicomItem *ite, std::list<DicomItem> &subItems) {
-
-}

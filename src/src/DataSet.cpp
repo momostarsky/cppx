@@ -9,7 +9,7 @@
 #include "../include/DataSet.h"
 #include "../include/OutOfException.h"
 #include "../include/DicomHeaderParser.h"
-#include "../include/ExplicitVrLittleEndianReader.h"
+#include "../include/ExplicitVrReader.h"
 #include "../include/TransferFactory.h"
 #include "../include/ImplicitVrLittleEndianReader.h"
 
@@ -112,6 +112,7 @@ void DataSet::ReadDataset(const uint32_t stopTag, bool expandTreeAsList) {
                 ts.append(hi.getData(), sz);
             }
 
+            break;
 
 //            std::cout << "TransferSyntaxUID-Value:[" << ts << "]" << std::endl;
 //
@@ -124,49 +125,44 @@ void DataSet::ReadDataset(const uint32_t stopTag, bool expandTreeAsList) {
 //    std::cout << "End DicomFileMetaInformation" << std::endl;
 
     if (ts.empty()) {
-        this->mHasError= true;
-        this->mErrorMessage= "TransferSyntax is Emtpty";
-
-
+        this->mHasError = true;
+        this->mErrorMessage = "TransferSyntax is Emtpty";
         return;
     }
     auto pts = TransferFactory::getTransferFactory();
 
     DicomUID tsuid = pts->GetDicomUID(ts);
     if (tsuid == DicomUID::Empty) {
-        this->mHasError= true;
-        this->mErrorMessage= "Find TransferSyntax Failed";
+        this->mHasError = true;
+        this->mErrorMessage = "Find TransferSyntax Failed";
 
         return;
     }
     DicomTransferSyntax transferSyntax = pts->GetTransferSyntax(tsuid);
     if (transferSyntax.UID == DicomUID::Empty) {
-        this->mHasError= true;
-        this->mErrorMessage= "Unsportted  TransferSyntax UID:" +ts ;
+        this->mHasError = true;
+        this->mErrorMessage = "Unsportted  TransferSyntax UID:" + ts;
 
         return;
     }
     //  std::list<DicomItem> items;
 
-    if (transferSyntax.Endian == Endian::Little) {
-        if (transferSyntax.IsExplicitVR) {
-            ExplicitVrLittleEndianReader dr(pReader);
-            dr.ReadDataset(dataSets);
-            if (dr.HasError()) {
-                std::cout << dr.ErrorMessage() << std::endl;
-                this->mHasError= true;
-                this->mErrorMessage= dr.ErrorMessage();
-            }
-        } else {
-            ImplicitVrLittleEndianReader dr(pReader);
-            dr.ReadDataset(dataSets);
+    std::cout << "IsExplicitVR:" <<( transferSyntax.IsExplicitVR ? "ExplicitVR":"ImplicitVR") << " And ByteOrdering:"
+              << (transferSyntax.Endian == tByteOrdering::lowByteEndian ? "littleEndian" : "bigEndian") << std::endl;
+
+    if (transferSyntax.IsExplicitVR) {
+        ExplicitVrReader dr(pReader, transferSyntax.Endian);
+        dr.ReadDataset(dataSets);
+        if (dr.HasError()) {
+            std::cout << dr.ErrorMessage() << std::endl;
+            this->mHasError = true;
+            this->mErrorMessage = dr.ErrorMessage();
         }
     } else {
-        this->mHasError= true;
-        this->mErrorMessage= "UUnImplimentions of BigEndian:" +ts ;
-
-        return;
+        ImplicitVrLittleEndianReader dr(pReader);
+        dr.ReadDataset(dataSets);
     }
+
 
 //    std::copy(items.begin(), items.end(),  std::back_inserter(this->dataSets));
 //

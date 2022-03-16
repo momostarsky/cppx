@@ -329,9 +329,9 @@ set(CROSSPLATFORM_SRCS
         include/DicomHeaderParser.h
         src/DicomItem.cpp
         include/DicomItem.h
-        src/ExplicitVrLittleEndianReader.cpp
+        src/ExplicitVrReader.cpp
         src/ImplicitVrLittleEndianReader.cpp
-        include/ExplicitVrLittleEndianReader.h
+        include/ExplicitVrReader.h
         include/ImplicitVrLittleEndianReader.h
         src/TagValueReader.cpp
         include/TagValueReader.h
@@ -345,6 +345,9 @@ set(CROSSPLATFORM_SRCS
         include/TransferFactory.h
         include/FileHelper.h
         src/FileHelper.cpp
+
+        include/Endian.h
+        src/Endian.cpp
         )
 
 

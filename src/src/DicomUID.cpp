@@ -4,11 +4,7 @@
 
 #include "../include/DicomUID.h"
 
-Endian Endian::Big = Endian{true};//NOLINT
 
-Endian Endian::Little = Endian{false}; //NOLINT
-
-Endian Endian::Network = Endian{true};//NOLINT
 
 
 DicomUID DicomUID::Empty = DicomUID{///NOLINT
