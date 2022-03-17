@@ -13,7 +13,7 @@
 class DataSet {
 
 public:
-    explicit DataSet(FILE *reader);
+    explicit DataSet(FILE *reader ,FILE *write= nullptr);
 
     explicit DataSet(std::string &filePath);
 
@@ -58,6 +58,8 @@ private:
 
     bool mHasError;
     std::string mErrorMessage;
+
+    FILE *pWriter;
 };
 
 

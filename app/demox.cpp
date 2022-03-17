@@ -39,32 +39,47 @@ int main(int argc, char **argv) {
         //MR-MONO2-12-shoulder.dcm
         std::cout << "DcmFile:" << dcmfile << std::endl;
 
+        size_t ipx = dcmfile.find_last_of('/');
+
+        if (ipx == -1) {
+            std::cout << "File Name NotFoudn !" << std::endl;
+            continue;
+
+        }
+
+        std::string fileName = dcmfile.substr(ipx + 1);
+
+        std::cout << "File Name:" << fileName << std::endl;
+
+        std::string logFile("./" + fileName+".txt");
 
         FILE *fd = fopen(dcmfile.c_str(), "rb");
 
 
-        DataSet ds(fd);
+        FILE *fw = fopen(logFile.c_str(), "w");
+
+        DataSet ds(fd, fw);
         ds.ReadDataset();
 
-        if(ds.HasError()  || ds.Items().empty()){
-            std::cerr << ds.ErrorMessage()  <<" or NotFound Tag" << std::endl;
-        } else {
-            char indexFmt[48]="0x%04X";
-            char indexStr[64]={0};
-
-            int index = 0;
-            for (DicomItem it: ds.Items()) {
-                snprintf(indexStr, 64, indexFmt, index);
-                std::cout <<  indexStr   << " --> "<< it.toString() << "  subs:" << it.Subs().size() << std::endl;
-//            tagDescription_t descp = p->getTagDescriptions(it.getTag()->Group(), it.getTag()->Element());
-//            if (descp.m_tagKeyword) {
-//                std::cout << descp.m_tagKeyword << std::endl;
-//            } else {
-//                std::cout << " Unknown " << std::endl;
-//            };
-                index++;
-            }
-        }
+//        if (ds.HasError() || ds.Items().empty()) {
+//            std::cerr << ds.ErrorMessage() << " or NotFound Tag" << std::endl;
+//        } else {
+//            char indexFmt[48] = "0x%04X";
+//            char indexStr[64] = {0};
+//
+//            int index = 0;
+//            for (DicomItem it: ds.Items()) {
+//                snprintf(indexStr, 64, indexFmt, index);
+//                std::cout << indexStr << " --> " << it.toString() << "  subs:" << it.Subs().size() << std::endl;
+////            tagDescription_t descp = p->getTagDescriptions(it.getTag()->Group(), it.getTag()->Element());
+////            if (descp.m_tagKeyword) {
+////                std::cout << descp.m_tagKeyword << std::endl;
+////            } else {
+////                std::cout << " Unknown " << std::endl;
+////            };
+//                index++;
+//            }
+//        }
 
         fclose(fd);
 
