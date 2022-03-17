@@ -16,7 +16,9 @@ void EndianConvert::reverseEndian(std::uint8_t *pBuffer, size_t wordLength, size
         case 2: {
             auto *pWord((std::uint16_t *) pBuffer);
             for (size_t scanWords = words; scanWords != 0; --scanWords) {
-                *pWord = (std::uint16_t) (((*pWord & 0x00ff) << 8) | ((*pWord & 0xff00) >> 8));
+                *pWord = (std::uint16_t) (
+                        ((*pWord & 0x00ff) << 8) |
+                        ((*pWord & 0xff00) >> 8));
                 ++pWord;
             }
         }
@@ -25,7 +27,9 @@ void EndianConvert::reverseEndian(std::uint8_t *pBuffer, size_t wordLength, size
             auto *pDWord((std::uint32_t *) pBuffer);
             for (size_t scanWords = words; scanWords != 0; --scanWords) {
                 *pDWord =
-                        ((*pDWord & 0xff000000) >> 24) | ((*pDWord & 0x00ff0000) >> 8) | ((*pDWord & 0x0000ff00) << 8) |
+                        ((*pDWord & 0xff000000) >> 24) |
+                        ((*pDWord & 0x00ff0000) >> 8) |
+                        ((*pDWord & 0x0000ff00) << 8) |
                         ((*pDWord & 0x000000ff) << 24);
                 ++pDWord;
             }
@@ -46,6 +50,8 @@ void EndianConvert::reverseEndian(std::uint8_t *pBuffer, size_t wordLength, size
                 ++pQWord;
             }
         }
+            return;
+        default:
             return;
     }
 
