@@ -2,19 +2,19 @@
 // Created by dhz on 2022/1/7.
 //
 
-#include "../include/ExplicitVrReader.h"
+#include "../include/ImplicitVrReader.h"
 #include <iostream>
 #include <cassert>
 
 
 void
-ExplicitVrReader::parseSQ(FILE *reader, DicomItem *ite, std::list<DicomItem> &subItems) {///NOLINT
+ImplicitVrReader::parseSQ(FILE *reader, DicomItem *ite, std::list<DicomItem> &subItems) {///NOLINT
     uint16_t groupId = 0;
     uint16_t elementId = 0;
     char skip4[4]{0};
     char grp[2]{0};
     char elm[2]{0};
-    char vr[2] = {0};
+
     char vl[4] = {0};
     std::list<DicomItem> stacks;
     stacks.push_front(*ite);
@@ -81,63 +81,55 @@ ExplicitVrReader::parseSQ(FILE *reader, DicomItem *ite, std::list<DicomItem> &su
         }
 
 
-        size_t vrL = fread(vr, 1, 2, mReader);
-        assert(vrL == 2);
-        std::string vrstr(vr, 2);
-        const DicomVR *tagVr = DicomVR::ParseVR(vrstr);
-        if (tagVr == pVR_NONE) {
-
-            fseek(mReader, -6, SEEK_CUR);
-            long cPositon = ftell(mReader);
-            char tipText[125] = {0};
-            char tipFmtStr[] = "TagError:0x%04X,0x%04X, Vr=%s, AtPosition:0x%04X";
-            snprintf(tipText, 124, tipFmtStr, groupId, elementId, vrstr.c_str(), cPositon);
-            mHasError = true;
-            mErrorMessage.assign(tipText);
-            break;
-        }
-
-        char vl2[2] = {0};
         char vl4[4] = {0};
         char reserved2[2] = {0};
         uint32_t valueLength = 0U;
+        // 读取长度
+        size_t vrx = fread(vl4, 1, 4, mReader);
+        assert(vrx == 4);
+        valueLength = bytesto_int4(vl4);
+        valueLength = EndianConvert::adjustEndian(valueLength, mByteOrdering);
 
+//#ifdef  DEBUG
+//
+//        char tagStr[100] = {0};
+//        char tagFmt[] = "SQ: 0x%04X, 0x%04X, %d";
+//
+//        snprintf(tagStr, 99, tagFmt, groupId, elementId, valueLength);
+//        std::cout << tagStr << std::endl;
+//
+//#endif
 
-        if (DicomVR::ElementWithFixedFormat(*tagVr)) {
-            size_t vrx = fread(vl2, 1, 2, mReader);
-            assert(vrx == 2);
-            uint16_t vl16 = bytesto_int2(vl2);
-            valueLength = EndianConvert::adjustEndian(vl16, mByteOrdering);
-            DicomItem xptr(groupId, elementId, *tagVr, valueLength, cDepth);
-            if (valueLength > 0 && valueLength != 0xFFFF) {
-                xptr.ReadData(mReader);
-            }
+        auto cpositon = ftell(mReader);
 
-            subItems.push_back(xptr);
-
-        } else {
-            size_t sk = fread(reserved2, 1, 2, mReader);
-            assert(sk == 2);
-            // 读取长度
-            size_t vrx = fread(vl4, 1, 4, mReader);
-            assert(vrx == 4);
-            valueLength = bytesto_int4(vl4);
-            valueLength = EndianConvert::adjustEndian(valueLength, mByteOrdering);
-            DicomItem sqptr(groupId, elementId, *tagVr, valueLength, cDepth);
-            subItems.push_back(sqptr);
-            if (valueLength == 0xFFFFFFFF) {
-                //Value Field has an Undefined Length and a Sequence Delimitation Item marks the end of the Value Field.
-                parseSQ(mReader, &sqptr, subItems);
-            } else if (valueLength > 0) {
-                sqptr.ReadData(mReader);
-                parseSubs(&sqptr, subItems);
+        if( valueLength != 0xFFFFFFFF  && valueLength > 0   ){
+            if (( cpositon+  valueLength) >= mDataLength) {
+                auto old = valueLength;
+                valueLength =  mDataLength - cpositon;
+                char errorFmt[] = "Unknown Tag & Data (0x%04X,0x%04X) larger (%d) than remaining bytes in file and changeTo (%d)";
+                char errorMsg[2048] = {0};
+                snprintf(errorMsg, 2048, errorFmt, groupId, elementId, old , valueLength );
+                std::cout << errorMsg << std::endl;
             }
         }
+
+
+
+        DicomItem sqptr(groupId, elementId, *pVR_NONE, valueLength, cDepth);
+        subItems.push_back(sqptr);
+        if (valueLength == 0xFFFFFFFF) {
+            //Value Field has an Undefined Length and a Sequence Delimitation Item marks the end of the Value Field.
+            parseSQ(mReader, &sqptr, subItems);
+        } else if (valueLength > 0) {
+            sqptr.ReadData(mReader);
+
+        }
+
     }
 }
 
 
-void ExplicitVrReader::parseSubs(DicomItem *ite, std::list<DicomItem> &subItems) {///NOLINT
+void ImplicitVrReader::parseSubs(DicomItem *ite, std::list<DicomItem> &subItems) {///NOLINT
     if (ite->getValueLength() <= 8) {
         // Group,Element,VR,XX
         // 合格的DicomItem 的最小字节数都是8 个字节
@@ -148,7 +140,7 @@ void ExplicitVrReader::parseSubs(DicomItem *ite, std::list<DicomItem> &subItems)
     }
 
     FILE *stream = fmemopen((void *) ite->getData(), ite->getValueLength(), "rb");
-    ExplicitVrReader subReader(stream, mByteOrdering);
+    ImplicitVrReader subReader(stream, mByteOrdering);
 
     subReader.ReadDataset(subItems, ite->getDepth() + 1);
     fclose(stream);
@@ -157,7 +149,7 @@ void ExplicitVrReader::parseSubs(DicomItem *ite, std::list<DicomItem> &subItems)
 }
 
 
-void ExplicitVrReader::ReadDataset(std::list<DicomItem> &items, uint32_t depath) {///NOLINT
+void ImplicitVrReader::ReadDataset(std::list<DicomItem> &items, uint32_t depath) {///NOLINT
 
     uint16_t groupId = 0;
     uint16_t elementId = 0;
@@ -171,8 +163,7 @@ void ExplicitVrReader::ReadDataset(std::list<DicomItem> &items, uint32_t depath)
     char grp[2]{0};
     // tag.ElementId
     char elm[2]{0};
-    // tag.ValueLength 2 bytes
-    char vl2[2]{0};
+
     // tag.ValueLength 4 bytes
     char vl4[4]{0};
 
@@ -214,88 +205,62 @@ void ExplicitVrReader::ReadDataset(std::list<DicomItem> &items, uint32_t depath)
             continue;
         }
 
-
-        size_t vrL = fread(vr, 1, 2, mReader);
-        assert(vrL == 2);
-        std::string vrstr(vr, 2);
-
-
-        const DicomVR *tagVr = DicomVR::ParseVR(vrstr);
-        if (tagVr == pVR_NONE) {
-            //---回退6个字节
-            fseek(mReader, -6, SEEK_CUR);
-
-            long cPositon = ftell(mReader);
-
-            assert(startPositon == cPositon);
-
-            char tipText[125] = {0};
-            char tipFmtStr[] = "TagError:0x%04X,0x%04X, Vr=%s, AtPosition:0x%04X";
-            snprintf(tipText, 124, tipFmtStr, groupId, elementId, vrstr.c_str(), cPositon);
-            mHasError = true;
-            mErrorMessage.assign(tipText);
-            break;
-        }
-        DicomItem *ptr = nullptr;
-
         std::list<DicomItem> subs;
-        if (DicomVR::ElementWithFixedFormat(*tagVr)) {
-            size_t vrx = fread(vl2, 1, 2, mReader);
-            assert(vrx == 2);
-            uint16_t shortLen = bytesto_int2(vl2);
+        // 读取长度
+        size_t vrx = fread(vl4, 1, 4, mReader);
+        assert(vrx == 4);
+        valueLength = bytesto_int4(vl4);
 
-            valueLength = EndianConvert::adjustEndian(shortLen, mByteOrdering);
-            ptr = new DicomItem(groupId, elementId, *tagVr, valueLength, depath);
-            if (valueLength == 0xFFFFFFFF) {
+        valueLength = EndianConvert::adjustEndian(valueLength, mByteOrdering);
+
+//#ifdef  DEBUG
+//
+//        char tagStr[100] = {0};
+//        char tagFmt[] = "0x%04X, 0x%04X, 0x%04X, %d";
+//
+//        snprintf(tagStr, 99, tagFmt, startPositon, groupId, elementId, valueLength);
+//        std::cout << tagStr << std::endl;
+//
+//#endif
+
+
+        if (valueLength == 0xFFFFFFFF) {
+            //Value Field has an Undefined Length and a Sequence Delimitation Item marks the end of the Value Field.
+            DicomItem cptr(groupId, elementId, *pVR_NONE, valueLength, depath);
+            parseSQ(mReader, &cptr, subs);
+            items.push_back(cptr);
+        } else if (valueLength > 0) {
+            auto cpositon = ftell(mReader);
+
+            if (( cpositon+  valueLength) >= mDataLength) {
+                char errorFmt[] = "Unknown Tag & Data (0x%04X,0x%04X) larger (%d) than remaining bytes in file";
+                char errorMsg[2048] = {0};
+                snprintf(errorMsg, 2048, errorFmt, groupId, elementId, valueLength);
+                std::cout  << errorMsg << std::endl;
+                valueLength = mDataLength - startPositon - 8;
+                DicomItem cptr(groupId, elementId, *pVR_NONE, valueLength, depath);
+                cptr.ReadData(mReader);
+                items.push_back(cptr);
                 break;
+            } else {
+                DicomItem cptr(groupId, elementId, *pVR_NONE, valueLength, depath);
+                cptr.ReadData(mReader);
+                items.push_back(cptr);
             }
-            if (valueLength > 0) {
-                ptr->ReadData(mReader);
-            }
-
-
-        } else {
-            size_t sk = fread(reserved2, 1, 2, mReader);
-            assert(sk == 2);
-            // 读取长度
-            size_t vrx = fread(vl4, 1, 4, mReader);
-            assert(vrx == 4);
-            valueLength = bytesto_int4(vl4);
-            valueLength = EndianConvert::adjustEndian(valueLength, mByteOrdering);
-
-
-            ptr = new DicomItem(groupId, elementId, *tagVr, valueLength, depath);
-
-
-            if (valueLength == 0xFFFFFFFF) {
-
-                //Value Field has an Undefined Length and a Sequence Delimitation Item marks the end of the Value Field.
-                parseSQ(mReader, ptr, subs);
-
-
-            } else if (valueLength > 0) {
-
-
-                ptr->ReadData(mReader);
-
-                parseSubs(ptr, subs);
-
-            }
-
-
         }
-        items.push_back(*ptr);
 
-        for (const auto &ci: subs) {
+
+        for (auto const &ci: subs) {
             items.push_back(ci);
         }
+
 
     }
 
 
 }
 
-ExplicitVrReader::ExplicitVrReader(FILE *cin, tByteOrdering byteOrdering) : mReader(cin),
+ImplicitVrReader::ImplicitVrReader(FILE *cin, tByteOrdering byteOrdering) : mReader(cin),
                                                                             mHasError(false),
                                                                             mByteOrdering(
                                                                                     byteOrdering) {

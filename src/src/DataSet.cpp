@@ -11,7 +11,7 @@
 #include "../include/DicomHeaderParser.h"
 #include "../include/ExplicitVrReader.h"
 #include "../include/TransferFactory.h"
-#include "../include/ImplicitVrLittleEndianReader.h"
+#include "../include/ImplicitVrReader.h"
 
 
 DataSet::DataSet(FILE *reader) : pReader(reader), mHasError(false) {
@@ -159,7 +159,7 @@ void DataSet::ReadDataset(const uint32_t stopTag, bool expandTreeAsList) {
             this->mErrorMessage = dr.ErrorMessage();
         }
     } else {
-        ImplicitVrLittleEndianReader dr(pReader);
+        ImplicitVrReader dr(pReader , transferSyntax.Endian);
         dr.ReadDataset(dataSets);
     }
 

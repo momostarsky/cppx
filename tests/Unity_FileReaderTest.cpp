@@ -176,4 +176,72 @@ namespace {
 
 
     }
+
+
+
+    TEST(TagTest, ImplicitVrReader_Test) {//NOLINT
+        const DicomDictionary *p = DicomDictionary::getDicomDictionary();
+        std::list<std::string> allDcmFiles;
+        std::string rootdir("./dcmfiles/v1.2-pass2");
+
+        FileHelper::enum_files(rootdir.c_str(), allDcmFiles);
+
+
+        const char *filestr = ".dcm";// "MR-MONO2-12-shoulder.dcm";
+        size_t tl = strlen(filestr);
+
+
+        for (const auto &dcmfile: allDcmFiles) {
+
+            const char *data = dcmfile.c_str() + strlen(dcmfile.c_str()) - tl;
+            if (0 != strncasecmp(data, filestr, tl)) {
+
+                continue;
+            }
+            std::cout << "DcmFile:" << dcmfile << std::endl;
+
+
+            FILE *fd = fopen(dcmfile.c_str(), "rb");
+
+
+            DataSet ds(fd);
+            ds.ReadDataset();
+            if (ds.HasError()) {
+                std::cout << ds.ErrorMessage() << std::endl;
+            }
+
+            ASSERT_TRUE(!ds.HasError());
+
+
+            fclose(fd);
+            DcmFileFormat fileformat;
+            OFCondition status = fileformat.loadFile(dcmfile.c_str());
+            ASSERT_TRUE(OFTrue == status.good());
+
+            DcmDataset *dcmDataset = fileformat.getDataset();
+
+
+            DcmObject *next = dcmDataset->nextInContainer(nullptr);
+            //遍历Tag（0008——7FE0）
+            while (next != nullptr) {
+                uint16_t grop = next->getGTag();
+                uint16_t elem = next->getETag();
+
+                std::_List_iterator<DicomItem> iter1 = std::find_if(ds.Items().begin(), ds.Items().end(),
+                                                                    [grop, elem](const DicomItem &n) {
+                                                                        return n.getTag()->Element() == elem &&
+                                                                               n.getTag()->Group() == grop;
+                                                                    });
+
+
+                ASSERT_TRUE(iter1 != std::end(ds.Items()));
+                std::cout <<(uint32_t) *iter1->getTag() << " And "<< iter1->toString() << std::endl;
+                next = dcmDataset->nextInContainer(next);
+            }
+
+
+        }
+
+
+    }
 }

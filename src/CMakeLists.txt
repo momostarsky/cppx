@@ -330,9 +330,9 @@ set(CROSSPLATFORM_SRCS
         src/DicomItem.cpp
         include/DicomItem.h
         src/ExplicitVrReader.cpp
-        src/ImplicitVrLittleEndianReader.cpp
+        src/ImplicitVrReader.cpp
         include/ExplicitVrReader.h
-        include/ImplicitVrLittleEndianReader.h
+        include/ImplicitVrReader.h
         src/TagValueReader.cpp
         include/TagValueReader.h
         include/dicts.h src/DicomDictionary.cpp

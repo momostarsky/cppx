@@ -87,7 +87,7 @@ void DicomHeaderParser::Parser(FILE *fd, std::list<DicomItem> &metaInfo) {
                 // FileMetaInformation Length
                 tagVr = pVR_UL;
                 size_t cpost = ftell(fd);
-                std::cout << std::hex << cpost << std::endl;
+//                std::cout << std::hex << cpost << std::endl;
 
                 rsb = fread(vl2, 1, 2, fd);
                 assert(rsb == 2);

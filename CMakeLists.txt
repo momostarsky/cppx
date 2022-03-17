@@ -12,7 +12,10 @@ set(CMAKE_CXX_FLAGS_RELEASE_INIT "-std=c++11 -g -O2")
 # default build type : Debug
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug)
+
 endif()
+add_definitions(-DDEBUG)
+
 add_subdirectory(src)
 # CTest related
 enable_testing()

@@ -6,12 +6,10 @@
 
 #include <iostream>
 #include <list>
-#include <sys/stat.h>
 #include "include/DicomItem.h"
 #include "include/DataSet.h"
 #include "include/DicomDictionary.h"
 #include "include/DicomUID.h"
-#include <sys/stat.h>
 #include "include/FileHelper.h"
 
 int main(int argc, char **argv) {
@@ -25,8 +23,8 @@ int main(int argc, char **argv) {
 //   const char*  filestr="MR-MONO2-12-shoulder.dcm";
 //   THERALYS-12-MONO2-Uncompressed-Even_Length_Tag
 //   size_t tl = strlen("MR-MONO2-12-shoulder.dcm");
-
-    const char *filestr = "GE_CT_With_Private_compressed-icon.dcm";
+// GE_CT_With_Private_compressed-icon
+    const char *filestr = ".dcm";
     size_t tl = strlen(filestr);
     for (const auto &dcmfile: allDcmFiles) {
 
@@ -48,21 +46,26 @@ int main(int argc, char **argv) {
         DataSet ds(fd);
         ds.ReadDataset();
 
-        char indexFmt[48]="0x%04X";
-        char indexStr[64]={0};
+        if(ds.HasError()  || ds.Items().empty()){
+            std::cerr << ds.ErrorMessage()  <<" or NotFound Tag" << std::endl;
+        } else {
+            char indexFmt[48]="0x%04X";
+            char indexStr[64]={0};
 
-        int index = 0;
-        for (DicomItem it: ds.Items()) {
-            snprintf(indexStr, 64, indexFmt, index);
-            std::cout <<  indexStr   << " --> "<< it.toString() << "  subs:" << it.Subs().size() << " ";
-            tagDescription_t descp = p->getTagDescriptions(it.getTag()->Group(), it.getTag()->Element());
-            if (descp.m_tagKeyword) {
-                std::cout << descp.m_tagKeyword << std::endl;
-            } else {
-                std::cout << " Unknown " << std::endl;
-            };
-            index++;
+            int index = 0;
+            for (DicomItem it: ds.Items()) {
+                snprintf(indexStr, 64, indexFmt, index);
+                std::cout <<  indexStr   << " --> "<< it.toString() << "  subs:" << it.Subs().size() << std::endl;
+//            tagDescription_t descp = p->getTagDescriptions(it.getTag()->Group(), it.getTag()->Element());
+//            if (descp.m_tagKeyword) {
+//                std::cout << descp.m_tagKeyword << std::endl;
+//            } else {
+//                std::cout << " Unknown " << std::endl;
+//            };
+                index++;
+            }
         }
+
         fclose(fd);
 
 
