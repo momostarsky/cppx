@@ -66,10 +66,21 @@ ExplicitVrReader::parseSQ(FILE *reader, DicomItem *ite, std::list<DicomItem> &su
             assert(sk == 4);
             uint32_t x = bytesto_int4(vl);
             x = EndianConvert::adjustEndian(x, mByteOrdering);
+            //
+            // 防止溢出
+            //
+
+
             DicomItem dicomItem(0xFFFE, 0xE000, *pVR_NONE, x, cDepth);
             if (x == 0xFFFFFFFF) {
                 stacks.push_front(dicomItem);
             } else if (x > 0) {
+
+                size_t cpos = ftell(reader);
+                if (x > 0 && x != 0xFFFFFFF && ((cpos + x) > mDataLength)) {
+                    dicomItem.setValueLength(mDataLength - cpos);
+                }
+
                 dicomItem.ReadData(reader);
                 parseSubs(&dicomItem, subItems);
             }
@@ -123,12 +134,20 @@ ExplicitVrReader::parseSQ(FILE *reader, DicomItem *ite, std::list<DicomItem> &su
             assert(vrx == 4);
             valueLength = bytesto_int4(vl4);
             valueLength = EndianConvert::adjustEndian(valueLength, mByteOrdering);
+
+
             DicomItem sqptr(groupId, elementId, *tagVr, valueLength, cDepth);
             subItems.push_back(sqptr);
             if (valueLength == 0xFFFFFFFF) {
                 //Value Field has an Undefined Length and a Sequence Delimitation Item marks the end of the Value Field.
                 parseSQ(mReader, &sqptr, subItems);
             } else if (valueLength > 0) {
+
+                size_t cpos = ftell(reader);
+                if (((cpos + valueLength) > mDataLength)) {
+                    sqptr.setValueLength(mDataLength - valueLength);
+                }
+
                 sqptr.ReadData(mReader);
                 parseSubs(&sqptr, subItems);
             }
@@ -236,7 +255,7 @@ void ExplicitVrReader::ReadDataset(std::list<DicomItem> &items, uint32_t depath)
             mErrorMessage.assign(tipText);
             break;
         }
-        DicomItem *ptr = nullptr;
+
 
         std::list<DicomItem> subs;
         if (DicomVR::ElementWithFixedFormat(*tagVr)) {
@@ -245,14 +264,16 @@ void ExplicitVrReader::ReadDataset(std::list<DicomItem> &items, uint32_t depath)
             uint16_t shortLen = bytesto_int2(vl2);
 
             valueLength = EndianConvert::adjustEndian(shortLen, mByteOrdering);
-            ptr = new DicomItem(groupId, elementId, *tagVr, valueLength, depath);
+            DicomItem ptr(groupId, elementId, *tagVr, valueLength, depath);
             if (valueLength == 0xFFFFFFFF) {
-                break;
+            } else if (valueLength > 0) {
+                size_t cpos = ftell(mReader);
+                if (((cpos + valueLength) > mDataLength)) {
+                    ptr.setValueLength(mDataLength - valueLength);
+                }
+                ptr.ReadData(mReader);
             }
-            if (valueLength > 0) {
-                ptr->ReadData(mReader);
-            }
-
+            items.push_back(ptr);
 
         } else {
             size_t sk = fread(reserved2, 1, 2, mReader);
@@ -264,31 +285,38 @@ void ExplicitVrReader::ReadDataset(std::list<DicomItem> &items, uint32_t depath)
             valueLength = EndianConvert::adjustEndian(valueLength, mByteOrdering);
 
 
-            ptr = new DicomItem(groupId, elementId, *tagVr, valueLength, depath);
+            DicomItem ptr(groupId, elementId, *tagVr, valueLength, depath);
 
 
             if (valueLength == 0xFFFFFFFF) {
 
                 //Value Field has an Undefined Length and a Sequence Delimitation Item marks the end of the Value Field.
-                parseSQ(mReader, ptr, subs);
+                parseSQ(mReader, &ptr, subs);
 
 
             } else if (valueLength > 0) {
 
+                size_t cpos = ftell(mReader);
+                if (((cpos + valueLength) > mDataLength)) {
+                    ptr.setValueLength(mDataLength - valueLength);
+                }
 
-                ptr->ReadData(mReader);
+                ptr.ReadData(mReader);
 
-                parseSubs(ptr, subs);
+                parseSubs(&ptr, subs);
 
             }
 
+            items.push_back(ptr);
+
 
         }
-        items.push_back(*ptr);
+
 
         for (const auto &ci: subs) {
             items.push_back(ci);
         }
+
 
     }
 

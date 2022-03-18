@@ -63,13 +63,6 @@ void DataSet::Read(const char *pBuffer, uint32_t max_size, vector<uint64_t> &val
     }
 }
 
-uint16_t DataSet::GetValue(uint32_t tagId, size_t index) {
-    return 0;
-}
-
-std::vector<uint16_t> DataSet::GetValues(uint32_t tagId) {
-    return {};
-}
 
 void flat(DicomItem &citem, std::list<DicomItem> &dataSet, bool appendCitem = true, int parentIndex = -1) {///NOLINT
 
@@ -161,6 +154,11 @@ void DataSet::ReadDataset(const uint32_t stopTag, bool expandTreeAsList) {
     } else {
         ImplicitVrReader dr(pReader, transferSyntax.Endian);
         dr.ReadDataset(dataSets);
+        if (dr.HasError()) {
+            std::cout << dr.ErrorMessage() << std::endl;
+            this->mHasError = true;
+            this->mErrorMessage = dr.ErrorMessage();
+        }
     }
     if (dataSets.empty()) {
         const char *str = "DicomTag Not Found !";
@@ -177,7 +175,11 @@ void DataSet::ReadDataset(const uint32_t stopTag, bool expandTreeAsList) {
                 std::string prefix((it.getDepth() - 1) * 2, '-');
 
                 snprintf(tagStr, 254, tagFmt, prefix.c_str(),
-                         it.getTag()->Group(), it.getTag()->Element(),  it.getValueLength() ,it.getDepth());
+                         it.getTag()->Group(), it.getTag()->Element(), it.getValueLength(), it.getDepth());
+
+#ifdef DEBUG
+                std::cout << tagStr;
+#endif
                 fwrite(tagStr, strlen(tagStr), 1, pWriter);
             }
         }
@@ -199,24 +201,15 @@ void DataSet::ReadDataset(const uint32_t stopTag, bool expandTreeAsList) {
 //    }
 }
 
-DataSet::~DataSet() {
-    if (!pReader) {
-        fclose(pReader);
-        pReader = nullptr;
-    }
+DataSet::~DataSet() =default ;
 
-    if (!pWriter) {
-        fflush(pWriter);
-        fclose(pWriter);
-        pWriter = nullptr;
-    }
-}
 
-DataSet::DataSet(const char *pBuffer, size_t bufferSize) : mHasError(false), pWriter(nullptr) {
-    pReader = fmemopen((void *) pBuffer, bufferSize, "rb");
-}
 
-DataSet::DataSet(string &filePath) : mHasError(false), pWriter(nullptr) {
-    pReader = fopen(filePath.c_str(), "rb");
-}
-
+//DataSet::DataSet(const char *pBuffer, size_t bufferSize) : mHasError(false), pWriter(nullptr) {
+//    pReader = fmemopen((void *) pBuffer, bufferSize, "rb");
+//}
+//
+//DataSet::DataSet(string &filePath) : mHasError(false), pWriter(nullptr) {
+//    pReader = fopen(filePath.c_str(), "rb");
+//}
+//

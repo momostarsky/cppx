@@ -70,6 +70,12 @@ ImplicitVrReader::parseSQ(FILE *reader, DicomItem *ite, std::list<DicomItem> &su
             if (x == 0xFFFFFFFF) {
                 stacks.push_front(dicomItem);
             } else if (x > 0) {
+
+                size_t cpos = ftell(mReader);
+                if (((cpos + x) > mDataLength)) {
+                    dicomItem.setValueLength(mDataLength - x);
+                }
+
                 dicomItem.ReadData(reader);
                 parseSubs(&dicomItem, subItems);
             }
@@ -100,19 +106,6 @@ ImplicitVrReader::parseSQ(FILE *reader, DicomItem *ite, std::list<DicomItem> &su
 //
 //#endif
 
-        auto cpositon = ftell(mReader);
-
-        if( valueLength != 0xFFFFFFFF  && valueLength > 0   ){
-            if (( cpositon+  valueLength) >= mDataLength) {
-                auto old = valueLength;
-                valueLength =  mDataLength - cpositon;
-                char errorFmt[] = "Unknown Tag & Data (0x%04X,0x%04X) larger (%d) than remaining bytes in file and changeTo (%d)";
-                char errorMsg[2048] = {0};
-                snprintf(errorMsg, 2048, errorFmt, groupId, elementId, old , valueLength );
-                std::cout << errorMsg << std::endl;
-            }
-        }
-
 
 
         DicomItem sqptr(groupId, elementId, *pVR_NONE, valueLength, cDepth);
@@ -121,6 +114,11 @@ ImplicitVrReader::parseSQ(FILE *reader, DicomItem *ite, std::list<DicomItem> &su
             //Value Field has an Undefined Length and a Sequence Delimitation Item marks the end of the Value Field.
             parseSQ(mReader, &sqptr, subItems);
         } else if (valueLength > 0) {
+            size_t cpos = ftell(mReader);
+            if (((cpos + valueLength) > mDataLength)) {
+                sqptr.setValueLength(mDataLength - valueLength);
+            }
+
             sqptr.ReadData(mReader);
 
         }
@@ -232,11 +230,11 @@ void ImplicitVrReader::ReadDataset(std::list<DicomItem> &items, uint32_t depath)
         } else if (valueLength > 0) {
             auto cpositon = ftell(mReader);
 
-            if (( cpositon+  valueLength) >= mDataLength) {
+            if ((cpositon + valueLength) >= mDataLength) {
                 char errorFmt[] = "Unknown Tag & Data (0x%04X,0x%04X) larger (%d) than remaining bytes in file";
                 char errorMsg[2048] = {0};
                 snprintf(errorMsg, 2048, errorFmt, groupId, elementId, valueLength);
-                std::cout  << errorMsg << std::endl;
+                std::cout << errorMsg << std::endl;
                 valueLength = mDataLength - startPositon - 8;
                 DicomItem cptr(groupId, elementId, *pVR_NONE, valueLength, depath);
                 cptr.ReadData(mReader);

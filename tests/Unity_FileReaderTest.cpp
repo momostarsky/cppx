@@ -66,7 +66,7 @@ namespace {
         FileHelper::enum_files(rootdir.c_str(), allDcmFiles);
 
 
-        const char *filestr = ".dcm";// "MR-MONO2-12-shoulder.dcm";
+        const char *filestr = "MR-MONO2-12-shoulder.dcm";// "MR-MONO2-12-shoulder.dcm";
         size_t tl = strlen(filestr);
 
 
@@ -114,7 +114,7 @@ namespace {
 
 
                 ASSERT_TRUE(iter1 != std::end(ds.Items()));
-                std::cout <<(uint32_t) *iter1->getTag() << " And "<< iter1->toString() << std::endl;
+                std::cout << (uint32_t) *iter1->getTag() << " And " << iter1->toString() << std::endl;
                 next = dcmDataset->nextInContainer(next);
             }
 
@@ -178,7 +178,6 @@ namespace {
     }
 
 
-
     TEST(TagTest, ImplicitVrReader_Test) {//NOLINT
         const DicomDictionary *p = DicomDictionary::getDicomDictionary();
         std::list<std::string> allDcmFiles;
@@ -235,7 +234,7 @@ namespace {
 
 
                 ASSERT_TRUE(iter1 != std::end(ds.Items()));
-                std::cout <<(uint32_t) *iter1->getTag() << " And "<< iter1->toString() << std::endl;
+                std::cout << (uint32_t) *iter1->getTag() << " And " << iter1->toString() << std::endl;
                 next = dcmDataset->nextInContainer(next);
             }
 

@@ -29,13 +29,15 @@ public:
 
     virtual  ~DicomItem();
 
-      DicomTag*    getTag() const {
+    DicomTag *getTag() const {
         return mTag;
     }
 
     uint32_t getValueLength() const {
         return mValueLength;
     }
+
+    void setValueLength(uint32_t valueLength)  ;
 
     DicomVR getVr() const {
         return mVr;

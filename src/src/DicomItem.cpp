@@ -13,6 +13,7 @@ DicomItem::~DicomItem() {
 
     delete[] mValueBuffer;
     delete mTag;
+    delete mPtrParent;
 }
 
 DicomItem::DicomItem(uint16_t groupId, uint16_t elementId, DicomVR vr,
@@ -47,7 +48,7 @@ std::string DicomItem::toString() {
     snprintf(tmp, 100, "%s0x%04hX,0x%04hX,VR=%s, VL=%d, Deepth :%d", prefix.c_str(), mTag->Group(), mTag->Element(),
              mVr.Code.c_str(),
              mValueLength, mDepth);
-    return std::string {tmp};
+    return std::string{tmp};
 //    for (auto &sb: mSubs) {
 //        char tmp2[100]{0};
 //        std::string prefix2((sb.mDepth - 1) * 2, '-');
@@ -76,6 +77,16 @@ DicomItem::DicomItem(const DicomItem &other) :
         mSubs.insert(mSubs.begin(), other.mSubs.begin(), other.mSubs.end());
     }
 
+
+}
+
+void DicomItem::setValueLength(uint32_t valueLength) {
+    if (mValueLength == valueLength) {
+        return;
+    }
+    delete[] mValueBuffer;
+    mValueBuffer = new char[mValueLength];
+    mValueLength = valueLength;
 
 }
 

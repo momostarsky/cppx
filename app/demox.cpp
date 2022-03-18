@@ -51,12 +51,14 @@ int main(int argc, char **argv) {
 
         std::cout << "File Name:" << fileName << std::endl;
 
-        std::string logFile("./" + fileName+".txt");
+        std::string logFile("./" + fileName + ".txt");
 
         FILE *fd = fopen(dcmfile.c_str(), "rb");
 
 
+        remove(logFile.c_str());
         FILE *fw = fopen(logFile.c_str(), "w");
+
 
         DataSet ds(fd, fw);
         ds.ReadDataset();
@@ -81,7 +83,13 @@ int main(int argc, char **argv) {
 //            }
 //        }
 
-        fclose(fd);
+        if (fd)
+            fclose(fd);
+        if (fw) {
+            fflush(fw);
+            fclose(fw);
+            fw = nullptr;
+        }
 
 
     }
