@@ -345,7 +345,7 @@ set(CROSSPLATFORM_SRCS
         include/TransferFactory.h
         include/FileHelper.h
         src/FileHelper.cpp
-
+        src/StringHelper.cpp
         include/Endian.h
         src/Endian.cpp
         )

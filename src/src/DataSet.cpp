@@ -6,15 +6,17 @@
 #include <cstdint>
 #include <cassert>
 #include <iostream>
+#include <algorithm>
 #include "../include/DataSet.h"
 #include "../include/OutOfException.h"
 #include "../include/DicomHeaderParser.h"
 #include "../include/ExplicitVrReader.h"
 #include "../include/TransferFactory.h"
 #include "../include/ImplicitVrReader.h"
+#include "../include/StringHelper.h"
 
-
-DataSet::DataSet(FILE *reader, FILE *writer) : pReader(reader), mHasError(false), pWriter(writer) {
+DataSet::DataSet(FILE *reader, FILE *writer) : pReader(reader), mHasError(false), pWriter(writer),
+                                               mTransferSyntax(DicomTransferSyntax::DeflatedExplicitVRLittleEndian) {
 }
 
 
@@ -131,8 +133,8 @@ void DataSet::ReadDataset(const uint32_t stopTag, bool expandTreeAsList) {
 
         return;
     }
-    DicomTransferSyntax transferSyntax = pts->GetTransferSyntax(tsuid);
-    if (transferSyntax.UID == DicomUID::Empty) {
+    mTransferSyntax = pts->GetTransferSyntax(tsuid);
+    if (mTransferSyntax.UID == DicomUID::Empty) {
         this->mHasError = true;
         this->mErrorMessage = "Unsportted  TransferSyntax UID:" + ts;
 
@@ -140,11 +142,11 @@ void DataSet::ReadDataset(const uint32_t stopTag, bool expandTreeAsList) {
     }
     //  std::list<DicomItem> items;
 
-    std::cout << "IsExplicitVR:" << (transferSyntax.IsExplicitVR ? "ExplicitVR" : "ImplicitVR") << " And ByteOrdering:"
-              << (transferSyntax.Endian == tByteOrdering::lowByteEndian ? "littleEndian" : "bigEndian") << std::endl;
+    std::cout << "IsExplicitVR:" << (mTransferSyntax.IsExplicitVR ? "ExplicitVR" : "ImplicitVR") << " And ByteOrdering:"
+              << (mTransferSyntax.Endian == tByteOrdering::lowByteEndian ? "littleEndian" : "bigEndian") << std::endl;
 
-    if (transferSyntax.IsExplicitVR) {
-        ExplicitVrReader dr(pReader, transferSyntax.Endian);
+    if (mTransferSyntax.IsExplicitVR) {
+        ExplicitVrReader dr(pReader, mTransferSyntax.Endian);
         dr.ReadDataset(dataSets);
         if (dr.HasError()) {
             std::cout << dr.ErrorMessage() << std::endl;
@@ -152,7 +154,7 @@ void DataSet::ReadDataset(const uint32_t stopTag, bool expandTreeAsList) {
             this->mErrorMessage = dr.ErrorMessage();
         }
     } else {
-        ImplicitVrReader dr(pReader, transferSyntax.Endian);
+        ImplicitVrReader dr(pReader, mTransferSyntax.Endian);
         dr.ReadDataset(dataSets);
         if (dr.HasError()) {
             std::cout << dr.ErrorMessage() << std::endl;
@@ -177,10 +179,34 @@ void DataSet::ReadDataset(const uint32_t stopTag, bool expandTreeAsList) {
                 snprintf(tagStr, 254, tagFmt, prefix.c_str(),
                          it.getTag()->Group(), it.getTag()->Element(), it.getValueLength(), it.getDepth());
 
-#ifdef DEBUG
-                std::cout << tagStr;
-#endif
+//#ifdef DEBUG
+//                std::cout << tagStr;
+//#endif
                 fwrite(tagStr, strlen(tagStr), 1, pWriter);
+
+                DicomVR cr = it.getVr();
+                if (cr == *pVR_AE
+                    || cr == *pVR_UI
+                    || cr == *pVR_CS
+                        ) {
+                    size_t rl = it.getValueLength();
+                    if (rl == 0) {
+                        continue;
+                    }
+                    char lst = it.getData()[rl];
+
+
+                    if (lst == '\0' || lst == 0x20) {
+                        rl = rl - 1;
+                    }
+                    std::string value;
+                    value.append(it.getData(), rl);
+
+                    const char *newLine = "\n";
+                    fwrite(newLine, 1, 1, pWriter);
+                    fwrite(value.c_str(), strlen(value.c_str()), 1, pWriter);
+                    fwrite(newLine, 1, 1, pWriter);
+                }
             }
         }
 
@@ -201,7 +227,105 @@ void DataSet::ReadDataset(const uint32_t stopTag, bool expandTreeAsList) {
 //    }
 }
 
-DataSet::~DataSet() =default ;
+bool DataSet::tagExists(const DicomTag &key) {
+    auto iter = std::find_if(dataSets.begin(), dataSets.end(), [key](DicomItem &n) {
+        return n.getTag()->Group() == key.Group() && n.getTag()->Element() == key.Element();
+    });
+    return iter != dataSets.end();
+
+}
+
+
+bool DataSet::findAndGetStringArray(const DicomTag &key, list<std::string> &value) {
+    auto iter = std::find_if(dataSets.begin(), dataSets.end(), [key](DicomItem &n) {
+        return n.getTag()->Group() == key.Group() && n.getTag()->Element() == key.Element();
+    });
+    if (iter == dataSets.end()) {
+        return false;
+    }
+    size_t rl = iter->getValueLength();
+    if (rl == 0) {
+        return false;
+    }
+    char lst = iter->getData()[rl-1];
+
+    if (lst == '\0' || lst == 0x20) {
+        rl = rl - 1;
+    }
+    std::string strValue(iter->getData(), rl);
+    StringHelper::splitStringToArray(strValue, '\\', value);
+    return true;
+}
+
+
+long DataSet::indexOf(const DicomTag &key) const {
+    auto iter = std::find_if(dataSets.begin(), dataSets.end(), [key](const DicomItem &n) {
+        return n.getTag()->Group() == key.Group() && n.getTag()->Element() == key.Element();
+    });
+    if (iter == dataSets.end()) {
+        return false;
+    }
+
+    return std::distance(dataSets.cbegin(), iter);
+
+}
+
+bool DataSet::findAndGetString(const DicomTag &key, string &value) const {
+    long cpos = indexOf(key);
+    if (cpos == -1) {
+        return false;
+    }
+    auto iter = dataSets.begin();
+    std::advance(iter, cpos);
+    size_t rl = iter->getValueLength();
+    if (rl == 0) {
+        value.append("");
+        return true;
+    }
+    char lst = iter->getData()[rl-1];
+    if (lst == '\0' || lst == 0x20) {
+        rl = rl - 1;
+    }
+    value.append(iter->getData(),  rl );
+    return true;
+}
+
+bool DataSet::findAndGetUint16(const DicomTag &key, uint16_t &value) const {
+    long cpos = indexOf(key);
+    if (cpos == -1) {
+        return false;
+    }
+    auto iter = dataSets.begin();
+    std::advance(iter, cpos);
+    size_t rl = iter->getValueLength();
+    if (rl != 2) {
+        return false;
+    }
+    memcpy(&value, iter->getData(), sizeof value);
+    value = EndianConvert::adjustEndian(value, mTransferSyntax.Endian);
+
+    return true;
+}
+
+bool DataSet::findAndGetUint32(const DicomTag &key, uint32_t &value) const {
+    long cpos = indexOf(key);
+    if (cpos == -1) {
+        return false;
+    }
+    auto iter = dataSets.begin();
+    std::advance(iter, cpos);
+    size_t rl = iter->getValueLength();
+    if (rl != 4) {
+        return false;
+    }
+    memcpy(&value, iter->getData(), sizeof value);
+    value = EndianConvert::adjustEndian(value, mTransferSyntax.Endian);
+
+    return true;
+}
+
+
+DataSet::~DataSet() = default;
 
 
 

@@ -10,6 +10,7 @@
 #include "include/DataSet.h"
 #include "include/DicomDictionary.h"
 #include "include/FileHelper.h"
+#include <algorithm>
 
 #ifndef DISABLE_DCMTK_INTEROPERABILITY_TEST
 
@@ -171,6 +172,131 @@ namespace {
                 std::cout << iter1->toString() << std::endl;
                 next = dcmDataset->nextInContainer(next);
             }
+
+        }
+
+
+    }
+
+
+    TEST(TagTest, TagValueReader2_Test) {//NOLINT
+
+        const DicomDictionary *p = DicomDictionary::getDicomDictionary();
+        std::list<std::string> allDcmFiles;
+        std::string rootdir("./dcmfiles/other-pass");
+
+        const char *filestr = "0002.DCM";// "MR-MONO2-12-shoulder.dcm";
+        size_t tl = strlen(filestr);
+
+        FileHelper::enum_files(rootdir.c_str(), allDcmFiles);
+
+        for (const auto &dcmfile: allDcmFiles) {
+
+            const char *data = dcmfile.c_str() + strlen(dcmfile.c_str()) - tl;
+            if (0 != strncasecmp(data, filestr, tl)) {
+                continue;
+            }
+            std::cout << dcmfile << std::endl;
+
+            FILE *fd = fopen(dcmfile.c_str(), "rb");
+
+
+            DataSet ds(fd);
+            ds.ReadDataset();
+
+            ASSERT_TRUE(!ds.HasError());
+            fclose(fd);
+
+            {
+                std::string uid;
+                DicomTag tag1(0x0008, 0x0016);
+                std::cout << "Index Of is :" << ds.indexOf(tag1) << std::endl;
+                ds.findAndGetString(tag1, uid);
+                std::cout << "Values is:" << uid << std::endl;
+                ASSERT_TRUE(0 == std::strcmp(uid.c_str(), "1.2.840.10008.5.1.4.1.1.12.1"));
+            }
+            {
+                std::string clsuid;
+                DicomTag tag1(0x0008, 0x0018);
+                std::cout << "Index Of is :" << ds.indexOf(tag1) << std::endl;
+                ds.findAndGetString(tag1, clsuid);
+                std::cout << "Values is:" << clsuid << std::endl;
+                ASSERT_TRUE(0 == std::strcmp(clsuid.c_str(), "1.3.12.2.1107.5.4.3.321890.19960124.162922.29"));
+
+
+            }
+
+            {
+                std::list<std::string> imageTypes;
+                DicomTag tag1(0x0008, 0x0008);
+                std::cout << "Index Of :" << ds.indexOf(tag1) << std::endl;
+                ds.findAndGetStringArray(tag1, imageTypes);
+                std::cout << "And Values is :[";
+                for (const auto &ck: imageTypes) {
+                    std::cout << ck << ",";
+                }
+                std::cout << "]" << std::endl;
+
+                ASSERT_TRUE(4 == imageTypes.size());
+                std::string v1("DERIVED");
+                //DERIVED\PRIMARY\SINGLE PLANE\SINGLE A
+                ASSERT_TRUE(1 == std::count(imageTypes.begin(), imageTypes.end(), v1));
+                ASSERT_TRUE(1 == std::count(imageTypes.begin(), imageTypes.end(), std::string("PRIMARY")));
+                ASSERT_TRUE(1 == std::count(imageTypes.begin(), imageTypes.end(), std::string("SINGLE PLANE")));
+                ASSERT_TRUE(1 == std::count(imageTypes.begin(), imageTypes.end(), std::string("SINGLE A")));
+                std::cout << std::endl;
+            }
+
+            {
+                uint16_t rows;
+                DicomTag tag1(0x0028, 0x0010);
+                std::cout << "Index Of :" << tag1 << " is :" << ds.indexOf(tag1);
+                ds.findAndGetUint16(tag1, rows);
+                std::cout << " Value=" << rows << std::endl;
+                ASSERT_TRUE(rows == 512);
+            }
+            {
+                uint16_t cols;
+                DicomTag tag1(0x0028, 0x0011);
+                std::cout << "Index Of :" << tag1 << " is :" << ds.indexOf(tag1);
+                ds.findAndGetUint16(tag1, cols);
+                std::cout << " Value=" << cols << std::endl;
+                ASSERT_TRUE(cols == 512);
+            }
+
+            {
+                uint16_t rows;
+                DicomTag tag1(0x0028, 0x0010);
+                std::cout << "Index Of :" << tag1 << " is :" << ds.indexOf(tag1)  ;
+                ds.findAndGetUint16(tag1, rows);
+                std::cout << " Value=" << rows << std::endl;
+                ASSERT_TRUE(rows == 512);
+            }
+
+            {
+//            (0028,0100) [US] BitsAllocated: 8
+//            (0028,0101) [US] BitsStored: 8
+//            (0028,0102) [US] HighBit: 7
+//            (0028,0103) [US] PixelRepresentation: 0
+
+
+                std::map<DicomTag, uint16_t> mk = {
+                        {DicomTag(0x0028, 0x0100), 8},
+                        {DicomTag(0x0028, 0x0101), 8},
+                        {DicomTag(0x0028, 0x0102), 7},
+                        {DicomTag(0x0028, 0x0103), 0},
+                };
+                for (auto &k: mk) {
+                    std::cout << "Index Of :" << k.first << " is:" << ds.indexOf(k.first);
+                    std::uint16_t fv;
+                    ds.findAndGetUint16(k.first, fv);
+                    std::cout << " Valus is:" << fv << std::endl;
+                    ASSERT_TRUE(fv == k.second);
+                }
+
+
+            }
+
 
         }
 

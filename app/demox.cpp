@@ -15,7 +15,7 @@
 int main(int argc, char **argv) {
     const DicomDictionary *p = DicomDictionary::getDicomDictionary();
     std::list<std::string> allDcmFiles;
-    std::string rootdir("/home/dhz/jpdata/goprod/dcmrw/dcmfiles");
+    std::string rootdir("../tests/dcmfiles");
 //    std::string rootdir("/home/dhz/jpdata/goprod/dcmrw/dcmfiles/v1.2.1-pass1");
 //MR-MONO2-12-shoulder.dcm
     FileHelper::enum_files(rootdir.c_str(), allDcmFiles);
@@ -24,7 +24,7 @@ int main(int argc, char **argv) {
 //   THERALYS-12-MONO2-Uncompressed-Even_Length_Tag
 //   size_t tl = strlen("MR-MONO2-12-shoulder.dcm");
 // GE_CT_With_Private_compressed-icon
-    const char *filestr = ".dcm";
+    const char *filestr = ".DCM";
     size_t tl = strlen(filestr);
     for (const auto &dcmfile: allDcmFiles) {
 
@@ -63,25 +63,11 @@ int main(int argc, char **argv) {
         DataSet ds(fd, fw);
         ds.ReadDataset();
 
-//        if (ds.HasError() || ds.Items().empty()) {
-//            std::cerr << ds.ErrorMessage() << " or NotFound Tag" << std::endl;
-//        } else {
-//            char indexFmt[48] = "0x%04X";
-//            char indexStr[64] = {0};
-//
-//            int index = 0;
-//            for (DicomItem it: ds.Items()) {
-//                snprintf(indexStr, 64, indexFmt, index);
-//                std::cout << indexStr << " --> " << it.toString() << "  subs:" << it.Subs().size() << std::endl;
-////            tagDescription_t descp = p->getTagDescriptions(it.getTag()->Group(), it.getTag()->Element());
-////            if (descp.m_tagKeyword) {
-////                std::cout << descp.m_tagKeyword << std::endl;
-////            } else {
-////                std::cout << " Unknown " << std::endl;
-////            };
-//                index++;
-//            }
-//        }
+        std::string uid;
+        DicomTag tag(0x0008,0x0016);
+        std::cout<<"Index Of is :" << ds.indexOf(tag) <<std::endl;
+        ds.findAndGetString(tag , uid);
+        std::cout<<"And Values is :" <<  uid <<std::endl;
 
         if (fd)
             fclose(fd);

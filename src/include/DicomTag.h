@@ -6,7 +6,8 @@
 #define CPPX_DICOMTAG_H
 
 #include "comm.h"
-
+#include <cstring>
+#include <unistd.h>
 
 class DicomTag {
 public:
@@ -23,6 +24,25 @@ public:
     }
 
 
+    bool operator<(const DicomTag &tag) const {
+
+        auto x = (uint32_t) tag;
+        auto y = (uint32_t) *this;
+
+        return x < y;
+
+    }
+
+    friend std::ostream &operator<<(std::ostream &os, const DicomTag &tag) {
+        const char fmtTag[] = "{0x%04X,0x%04X}";
+        char fmtStr[25] = {0};
+        snprintf(fmtStr, 24, fmtTag, tag.mGroup, tag.mElement);
+        std::string vs(fmtStr);
+        os << vs;
+        return os;
+
+
+    }
 
 
     DicomTag(const DicomTag &);

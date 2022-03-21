@@ -9,6 +9,7 @@
 #include <functional>
 #include <cctype>
 #include <locale>
+#include <list>
 
 class StringHelper {
 // trim from start (in place)
@@ -45,7 +46,12 @@ public:
         s.erase(s.begin(), std::find_if(s.begin(), s.end(),
                                         std::not1(std::ptr_fun<int, int>(std::isspace))));
     }
+
+    static void splitStringToArray(std::string &strValue, char sepChar, std::list<std::string> &array)  ;
+
+
 };
+
 
 
 #endif //CPPX_STRINGHELPER_H
