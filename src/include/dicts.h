@@ -21,4 +21,16 @@ struct tagDescription_t {
 };
 extern const tagDescription_t m_tagsDescription[4510];
 
+/**!
+ * 私有TAG 秒数
+ */
+struct tagPriDesc_t{
+public:
+    std::string m_group;
+    std::string m_element;
+    std::string m_vr;
+    std::string m_vm;
+    std::string m_key;
+};
+
 #endif //CPPX_DICTS_H

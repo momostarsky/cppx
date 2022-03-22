@@ -64,6 +64,9 @@ int main(int argc, char **argv) {
         DataSet ds(fd, fw);
         ds.ReadDataset();
 
+        if(ds.HasError()){
+           std::cout <<ds.ErrorMessage() <<std::endl;
+        }
         std::string uid;
         DicomTag tag(0x0008,0x0016);
         std::cout<<"Index Of is :" << ds.indexOf(tag) <<std::endl;

@@ -19,19 +19,17 @@ set(CMAKE_CXX_STANDARD 14)
 ## Define specific Release settings.
 #set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -D NDEBUG -O3")
 
-if(NOT CMAKE_BUILD_TYPE)
+if (NOT CMAKE_BUILD_TYPE)
 
-  set(CMAKE_BUILD_TYPE Release)
-  
-endif(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release)
+
+endif ()
 
 include_regular_expression("^.*$")
 
 # Defines the source code for the library
-option (BUILD_SHARED_LIBS "Build CharLS with shared libraries." OFF)
-option (BUILD_TESTING     "Build tests"                         ON)
-
-
+option(BUILD_SHARED_LIBS "Build CharLS with shared libraries." OFF)
+option(BUILD_TESTING "Build tests" ON)
 
 
 #CharLS Library
@@ -61,7 +59,7 @@ set(CHARLS_SRCS
         CharLS/processline.h
         CharLS/scan.h
         CharLS/util.h
- )
+        )
 
 #libijg8 library
 set(LIBIJG8_SRCS
@@ -129,7 +127,7 @@ set(LIBIJG8_SRCS
         libijg8/jquant1.c
         libijg8/jquant2.c
         libijg8/jutils.c
-)
+        )
 
 #libijg12 library
 set(LIBIJG12_SRCS
@@ -197,7 +195,7 @@ set(LIBIJG12_SRCS
         libijg12/jquant1.c
         libijg12/jquant2.c
         libijg12/jutils.c
-)
+        )
 
 #libijg12 library
 set(LIBIJG16_SRCS
@@ -265,7 +263,7 @@ set(LIBIJG16_SRCS
         libijg16/jquant1.c
         libijg16/jquant2.c
         libijg16/jutils.c
-)
+        )
 
 #OpenJPEG Library
 set(OPENJPEG_SRCS
@@ -293,7 +291,7 @@ set(OPENJPEG_SRCS
         OpenJPEG/thix_manager.c
         OpenJPEG/tpix_manager.c
         OpenJPEG/openjpeg.h
-)
+        )
 
 #FILE(GLOB  HEADERS include/*.h)
 #FILE(GLOB  IMPLS impl/*.cpp)
@@ -348,6 +346,13 @@ set(CROSSPLATFORM_SRCS
         src/StringHelper.cpp
         include/Endian.h
         src/Endian.cpp
+        include/privDicts.h
+        include/PrivateDictionary.h
+        src/PrivateDictionary.cpp
+        include/tinyxml2.h
+        include/tinyxml2.cpp
+
+
         )
 
 
@@ -356,13 +361,13 @@ add_library(Dicom.Native-linux64 SHARED
         ${OPENJPEG_SRCS} ${LIBIJG16_SRCS} ${LIBIJG12_SRCS} ${LIBIJG8_SRCS} ${CHARLS_SRCS}
         ${CROSSPLATFORM_SRCS}
 
-)
+        )
 
 #Setting properties for shared o dynamic library 
 set_target_properties(Dicom.Native-linux64
-  PROPERTIES
-  LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
-  RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
-  PREFIX ""
-)
+        PROPERTIES
+        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+        PREFIX ""
+        )
 

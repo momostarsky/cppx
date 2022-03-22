@@ -149,7 +149,7 @@ void DataSet::ReadDataset(const uint32_t stopTag, bool expandTreeAsList) {
         ExplicitVrReader dr(pReader, mTransferSyntax.Endian);
         dr.ReadDataset(dataSets);
         if (dr.HasError()) {
-            std::cout << dr.ErrorMessage() << std::endl;
+
             this->mHasError = true;
             this->mErrorMessage = dr.ErrorMessage();
         }
@@ -157,7 +157,7 @@ void DataSet::ReadDataset(const uint32_t stopTag, bool expandTreeAsList) {
         ImplicitVrReader dr(pReader, mTransferSyntax.Endian);
         dr.ReadDataset(dataSets);
         if (dr.HasError()) {
-            std::cout << dr.ErrorMessage() << std::endl;
+
             this->mHasError = true;
             this->mErrorMessage = dr.ErrorMessage();
         }
@@ -179,9 +179,9 @@ void DataSet::ReadDataset(const uint32_t stopTag, bool expandTreeAsList) {
                 snprintf(tagStr, 254, tagFmt, prefix.c_str(),
                          it.getTag()->Group(), it.getTag()->Element(), it.getValueLength(), it.getDepth());
 
-//#ifdef DEBUG
-//                std::cout << tagStr;
-//#endif
+#ifdef DEBUG
+                std::cout << tagStr;
+#endif
                 fwrite(tagStr, strlen(tagStr), 1, pWriter);
 
                 DicomVR cr = it.getVr();
