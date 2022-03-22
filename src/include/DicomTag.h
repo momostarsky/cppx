@@ -6,6 +6,7 @@
 #define CPPX_DICOMTAG_H
 
 #include "comm.h"
+#include <ostream>
 #include <cstring>
 #include <unistd.h>
 
@@ -37,8 +38,9 @@ public:
         const char fmtTag[] = "{0x%04X,0x%04X}";
         char fmtStr[25] = {0};
         snprintf(fmtStr, 24, fmtTag, tag.mGroup, tag.mElement);
-        std::string vs(fmtStr);
-        os << vs;
+//        std::string vs(fmtStr);
+//        os << vs;
+        os << fmtStr;
         return os;
 
 

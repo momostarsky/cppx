@@ -22,9 +22,10 @@ int main(int argc, char **argv) {
 
 //   const char*  filestr="MR-MONO2-12-shoulder.dcm";
 //   THERALYS-12-MONO2-Uncompressed-Even_Length_Tag
+//   SIEMENS_MAGNETOM-12-MONO2-GDCM12-VRUN.dcm
 //   size_t tl = strlen("MR-MONO2-12-shoulder.dcm");
 // GE_CT_With_Private_compressed-icon
-    const char *filestr = ".DCM";
+    const char *filestr = "SIEMENS_MAGNETOM-12-MONO2-GDCM12-VRUN.DCM";
     size_t tl = strlen(filestr);
     for (const auto &dcmfile: allDcmFiles) {
 
