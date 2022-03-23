@@ -569,7 +569,7 @@ bool DicomVR::ElementWithFixedFormat(const DicomVR &vr) {
     //AE, AS, AT, CS, DA, DS, DT, FL, FD, IS, LO, LT, PN, SH, SL, SS, ST, TM, UI, UL and US
 
     if (vr.Code == DicomVR_AE
-     || vr.Code == DicomVR_AS
+    || vr.Code == DicomVR_AS
     || vr.Code == DicomVR_AT
     || vr.Code == DicomVR_CS
     || vr.Code == DicomVR_DA

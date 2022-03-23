@@ -9,7 +9,9 @@
 #include <list>
 #include "DicomItem.h"
 #include "Endian.h"
-class ExplicitVrReader {
+#include "DicomStreamReader.h"
+
+class ExplicitVrReader : public DicomStreamReader {
 public:
     explicit ExplicitVrReader(FILE *cin, tByteOrdering byteOrdering);
 
@@ -21,14 +23,9 @@ public:
 
     bool operator==(const ExplicitVrReader &) = delete;
 
-    void ReadDataset(std::list<DicomItem> &items, uint32_t depath = 1);
-
-    bool HasError() const { return mHasError; }
-
-    std::string ErrorMessage() const { return mErrorMessage; }
+    void ReadDataset(std::list<DicomItem> &items, uint32_t depath  ) override;
 
 protected:
-
 
     void parseSubs(DicomItem *ite, std::list<DicomItem> &subItems);
 
@@ -38,8 +35,6 @@ protected:
 protected:
     FILE *mReader;
     size_t mDataLength;
-    bool mHasError;
-    std::string mErrorMessage;
 
     tByteOrdering  mByteOrdering;
 };

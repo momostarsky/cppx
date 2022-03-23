@@ -26,6 +26,8 @@ ImplicitVrReader::parseSQ(FILE *reader, DicomItem *ite, std::list<DicomItem> &su
             break;
         }
 
+        auto  startPosition = ftell(reader);
+
         size_t gl = fread(grp, 1, 2, reader);
 
         assert(gl == 2);
@@ -73,11 +75,13 @@ ImplicitVrReader::parseSQ(FILE *reader, DicomItem *ite, std::list<DicomItem> &su
 
                 size_t cpos = ftell(mReader);
                 if (((cpos + x) > mDataLength)) {
-                    dicomItem.setValueLength(mDataLength - x);
+
+                    ValueLengthOutofRange(startPosition,groupId,elementId, "",x,mDataLength);
+                    break;
                 }
 
-                dicomItem.ReadData(reader);
-                parseSubs(&dicomItem, subItems);
+//                dicomItem.ReadData(reader);
+//                parseSubs(&dicomItem, subItems);
             }
             subItems.push_back(dicomItem);
             for (const auto &si: dicomItem.Subs()) {
@@ -228,17 +232,20 @@ void ImplicitVrReader::ReadDataset(std::list<DicomItem> &items, uint32_t depath)
             parseSQ(mReader, &cptr, subs);
             items.push_back(cptr);
         } else if (valueLength > 0) {
-            auto cpositon = ftell(mReader);
+            auto cpos = ftell(mReader);
 
-            if ((cpositon + valueLength) >= mDataLength) {
-                char errorFmt[] = "Unknown Tag & Data (0x%04X,0x%04X) larger (%d) than remaining bytes in file";
-                char errorMsg[2048] = {0};
-                snprintf(errorMsg, 2048, errorFmt, groupId, elementId, valueLength);
-                std::cout << errorMsg << std::endl;
-                valueLength = mDataLength - startPositon - 8;
-                DicomItem cptr(groupId, elementId, *pVR_NONE, valueLength, depath);
-                cptr.ReadData(mReader);
-                items.push_back(cptr);
+            if ((cpos + valueLength) >= mDataLength) {
+
+                ValueLengthOutofRange(startPositon,groupId,elementId,"",valueLength,mDataLength);
+//                char errorFmt[] = "Unknown Tag & Data (0x%04X,0x%04X) larger (%d) than remaining bytes in file";
+//                char errorMsg[2048] = {0};
+//                snprintf(errorMsg, 2048, errorFmt, groupId, elementId, valueLength);
+//                std::cout << errorMsg << std::endl;
+//                valueLength = mDataLength - startPositon - 8;
+//                DicomItem cptr(groupId, elementId, *pVR_NONE, valueLength, depath);
+//                cptr.ReadData(mReader);
+//                items.push_back(cptr);
+
                 break;
             } else {
                 DicomItem cptr(groupId, elementId, *pVR_NONE, valueLength, depath);
@@ -259,7 +266,7 @@ void ImplicitVrReader::ReadDataset(std::list<DicomItem> &items, uint32_t depath)
 }
 
 ImplicitVrReader::ImplicitVrReader(FILE *cin, tByteOrdering byteOrdering) : mReader(cin),
-                                                                            mHasError(false),
+
                                                                             mByteOrdering(
                                                                                     byteOrdering) {
 

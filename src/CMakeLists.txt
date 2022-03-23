@@ -333,9 +333,11 @@ set(CROSSPLATFORM_SRCS
         include/ImplicitVrReader.h
         src/TagValueReader.cpp
         include/TagValueReader.h
-        include/dicts.h src/DicomDictionary.cpp
+        include/dicts.h
+        src/DicomDictionary.cpp
         include/DicomDictionary.h
-        src/dicts.cpp src/tagConstant.cpp
+        src/dicts.cpp
+        src/tagConstant.cpp
         src/DicomUID.cpp
         include/DicomUID.h
         src/DicomTS.cpp
@@ -351,6 +353,8 @@ set(CROSSPLATFORM_SRCS
         src/PrivateDictionary.cpp
         include/tinyxml2.h
         include/tinyxml2.cpp
+        include/DicomStreamReader.h
+        src/DicomStreamReader.cpp
 
 
         )

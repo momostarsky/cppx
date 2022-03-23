@@ -145,22 +145,20 @@ void DataSet::ReadDataset(const uint32_t stopTag, bool expandTreeAsList) {
     std::cout << "IsExplicitVR:" << (mTransferSyntax.IsExplicitVR ? "ExplicitVR" : "ImplicitVR") << " And ByteOrdering:"
               << (mTransferSyntax.Endian == tByteOrdering::lowByteEndian ? "littleEndian" : "bigEndian") << std::endl;
 
+    DicomStreamReader *dicomReader = nullptr;
     if (mTransferSyntax.IsExplicitVR) {
-        ExplicitVrReader dr(pReader, mTransferSyntax.Endian);
-        dr.ReadDataset(dataSets);
-        if (dr.HasError()) {
+        dicomReader = new ExplicitVrReader(pReader, mTransferSyntax.Endian);
 
-            this->mHasError = true;
-            this->mErrorMessage = dr.ErrorMessage();
-        }
+
     } else {
-        ImplicitVrReader dr(pReader, mTransferSyntax.Endian);
-        dr.ReadDataset(dataSets);
-        if (dr.HasError()) {
+        dicomReader = new ImplicitVrReader(pReader, mTransferSyntax.Endian);
 
-            this->mHasError = true;
-            this->mErrorMessage = dr.ErrorMessage();
-        }
+
+    }
+    dicomReader->ReadDataset(dataSets, 1);
+    if (dicomReader->HasError()) {
+        this->mHasError = true;
+        this->mErrorMessage = dicomReader->ErrorMessage();
     }
     if (dataSets.empty()) {
         const char *str = "DicomTag Not Found !";
@@ -212,6 +210,8 @@ void DataSet::ReadDataset(const uint32_t stopTag, bool expandTreeAsList) {
 
     }
 
+    delete dicomReader;
+
 
 //    std::copy(items.begin(), items.end(),  std::back_inserter(this->dataSets));
 //
@@ -247,7 +247,7 @@ bool DataSet::findAndGetStringArray(const DicomTag &key, list<std::string> &valu
     if (rl == 0) {
         return false;
     }
-    char lst = iter->getData()[rl-1];
+    char lst = iter->getData()[rl - 1];
 
     if (lst == '\0' || lst == 0x20) {
         rl = rl - 1;
@@ -282,11 +282,11 @@ bool DataSet::findAndGetString(const DicomTag &key, string &value) const {
         value.append("");
         return true;
     }
-    char lst = iter->getData()[rl-1];
+    char lst = iter->getData()[rl - 1];
     if (lst == '\0' || lst == 0x20) {
         rl = rl - 1;
     }
-    value.append(iter->getData(),  rl );
+    value.append(iter->getData(), rl);
     return true;
 }
 

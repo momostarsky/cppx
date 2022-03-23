@@ -71,24 +71,15 @@ ExplicitVrReader::parseSQ(FILE *reader, DicomItem *ite, std::list<DicomItem> &su
             //
             // 防止溢出
             //
-
-
             DicomItem dicomItem(0xFFFE, 0xE000, *pVR_NONE, x, cDepth);
             if (x == 0xFFFFFFFF) {
                 stacks.push_front(dicomItem);
             } else if (x > 0) {
-
                 size_t cpos = ftell(reader);
                 if ((cpos + x) > mDataLength) {
-
-                    char tagError[] = "Offset:0x%04X,Dicom Tag:0x%04X,0x%04X, VR=%s, VL=0x%04X ,Outof FileLength:%d";
-                    char tagMessage[512 + 1] = {0};
-                    snprintf(tagMessage, 512, tagError, startPositon, groupId, elementId,  "UN",x,mDataLength);
-                    this->mHasError = true;
-                    this->mErrorMessage = (tagMessage);
+                    ValueLengthOutofRange(startPositon, groupId, elementId, "", x, mDataLength);
                     return;
                 }
-
                 dicomItem.ReadData(reader);
                 parseSubs(&dicomItem, subItems);
             }
@@ -107,12 +98,8 @@ ExplicitVrReader::parseSQ(FILE *reader, DicomItem *ite, std::list<DicomItem> &su
         if (tagVr == pVR_NONE) {
 
             fseek(mReader, -6, SEEK_CUR);
-            long cPositon = ftell(mReader);
-            char tipText[125] = {0};
-            char tipFmtStr[] = "TagError:0x%04X,0x%04X, Vr=%s, AtPosition:0x%04X";
-            snprintf(tipText, 124, tipFmtStr, groupId, elementId, vrstr.c_str(), cPositon);
-            mHasError = true;
-            mErrorMessage.assign(tipText);
+
+            VrNoneErrorMessage(startPositon, groupId, elementId, vrstr);
             break;
         }
 
@@ -120,8 +107,6 @@ ExplicitVrReader::parseSQ(FILE *reader, DicomItem *ite, std::list<DicomItem> &su
         char vl4[4] = {0};
         char reserved2[2] = {0};
         uint32_t valueLength = 0U;
-
-
         if (DicomVR::ElementWithFixedFormat(*tagVr)) {
             size_t vrx = fread(vl2, 1, 2, mReader);
             assert(vrx == 2);
@@ -131,10 +116,10 @@ ExplicitVrReader::parseSQ(FILE *reader, DicomItem *ite, std::list<DicomItem> &su
             if (valueLength > 0 && valueLength != 0xFFFF) {
                 xptr.ReadData(mReader);
             }
-
             subItems.push_back(xptr);
-
-        } else {
+            continue;
+        }
+        {
             size_t sk = fread(reserved2, 1, 2, mReader);
             assert(sk == 2);
             // 读取长度
@@ -142,27 +127,17 @@ ExplicitVrReader::parseSQ(FILE *reader, DicomItem *ite, std::list<DicomItem> &su
             assert(vrx == 4);
             valueLength = bytesto_int4(vl4);
             valueLength = EndianConvert::adjustEndian(valueLength, mByteOrdering);
-
-
             DicomItem sqptr(groupId, elementId, *tagVr, valueLength, cDepth);
             subItems.push_back(sqptr);
             if (valueLength == 0xFFFFFFFF) {
                 //Value Field has an Undefined Length and a Sequence Delimitation Item marks the end of the Value Field.
                 parseSQ(mReader, &sqptr, subItems);
             } else if (valueLength > 0) {
-
                 size_t cpos = ftell(reader);
                 if (((cpos + valueLength) > mDataLength)) {
-
-                    char tagError[] = "Offset:0x%04X,Dicom Tag:0x%04X,0x%04X, VR=%s, VL=0x%04X ,Outof FileLength:%d";
-                    char tagMessage[512 + 1] = {0};
-                    snprintf(tagMessage, 512, tagError, startPositon, groupId, elementId, vrstr.c_str(),valueLength,mDataLength);
-                    this->mHasError = true;
-                    this->mErrorMessage = (tagMessage);
-
-                    return;
+                    ValueLengthOutofRange(startPositon, groupId, elementId, vrstr, valueLength, mDataLength);
+                    break;
                 }
-
                 sqptr.ReadData(mReader);
                 parseSubs(&sqptr, subItems);
             }
@@ -235,17 +210,16 @@ void ExplicitVrReader::ReadDataset(std::list<DicomItem> &items, uint32_t depath)
         elementId = bytesto_int2(elm);
         elementId = EndianConvert::adjustEndian(elementId, mByteOrdering);
 
-#ifdef DEBUG
-        char tagFmt[] = "Offset: 0x%04X,  Tag:0x%04X,0x%04X";
-        char tagStr[125] = {0};
-        snprintf(tagStr, 124, tagFmt, startPositon, groupId, elementId);
-        std::cout << "Process Tag:" << tagStr << std::endl;
-        if (groupId == 0x0019 && elementId == 0x1241) {
-            std::cout << "Break Points Here !" << std::endl;
-        }
-#endif
-        if (groupId == 0xFFFE && (elementId == 0xE000 || elementId == 0xE00D || elementId == 0xE0DD)
-                ) {
+//#ifdef DEBUG
+//        char tagFmt[] = "Offset: 0x%04X,  Tag:0x%04X,0x%04X";
+//        char tagStr[125] = {0};
+//        snprintf(tagStr, 124, tagFmt, startPositon, groupId, elementId);
+//        std::cout << "Process Tag:" << tagStr << std::endl;
+//        if (groupId == 0x0019 && elementId == 0x1241) {
+//            std::cout << "Break Points Here !" << std::endl;
+//        }
+//#endif
+        if (groupId == 0xFFFE && (elementId == 0xE000 || elementId == 0xE00D || elementId == 0xE0DD)) {
             //---向前跳4个字节
 
             size_t vrx = fread(vl4, 1, 4, mReader);
@@ -254,7 +228,6 @@ void ExplicitVrReader::ReadDataset(std::list<DicomItem> &items, uint32_t depath)
             valueLength = EndianConvert::adjustEndian(valueLength, mByteOrdering);
             DicomItem sep(groupId, elementId, *pVR_NONE, valueLength, depath);
             items.push_back(sep);
-
             continue;
         }
 
@@ -273,16 +246,11 @@ void ExplicitVrReader::ReadDataset(std::list<DicomItem> &items, uint32_t depath)
 
             assert(startPositon == cPositon);
 
-            char tipText[125] = {0};
-            char tipFmtStr[] = "TagError:0x%04X,0x%04X, Vr=%s, AtPosition:0x%04X";
-            snprintf(tipText, 124, tipFmtStr, groupId, elementId, vrstr.c_str(), cPositon);
-            mHasError = true;
-            mErrorMessage.assign(tipText);
+            VrNoneErrorMessage(startPositon, groupId, elementId, vrstr);
             break;
         }
 
 
-        std::list<DicomItem> subs;
         if (DicomVR::ElementWithFixedFormat(*tagVr)) {
             size_t vrx = fread(vl2, 1, 2, mReader);
             assert(vrx == 2);
@@ -291,27 +259,24 @@ void ExplicitVrReader::ReadDataset(std::list<DicomItem> &items, uint32_t depath)
             valueLength = EndianConvert::adjustEndian(shortLen, mByteOrdering);
             DicomItem ptr(groupId, elementId, *tagVr, valueLength, depath);
             if (valueLength == 0xFFFFFFFF) {
-                char tagError[] = "Dicom Tag:0x%04X,0x%04X, VR=%s,  and ValueLength is 0xFFFFFFFF";
-                char tagMessage[512 + 1] = {0};
-                snprintf(tagMessage, 512, tagError, groupId, elementId, vrstr.c_str());
-                this->mHasError = true;
-                this->mErrorMessage = (tagMessage);
-                return;
-            } else if (valueLength > 0) {
+                ValueLengthErrorMessage(startPositon, groupId, elementId, vrstr);
+                break;
+            }
+
+            if (valueLength > 0) {
                 size_t cpos = ftell(mReader);
                 if (((cpos + valueLength) > mDataLength)) {
-                    char tagError[] = "Offset:0x%04X,Dicom Tag:0x%04X,0x%04X, VR=%s, VL=0x%04X ,Outof FileLength:%d";
-                    char tagMessage[512 + 1] = {0};
-                    snprintf(tagMessage, 512, tagError, startPositon, groupId, elementId, vrstr.c_str(),valueLength,mDataLength);
-                    this->mHasError = true;
-                    this->mErrorMessage = (tagMessage);
+                    ValueLengthOutofRange(startPositon, groupId, elementId, vrstr, valueLength, mDataLength);
                     return;
                 }
                 ptr.ReadData(mReader);
             }
             items.push_back(ptr);
+            continue;
 
-        } else {
+        }
+        {
+            std::list<DicomItem> subs;
             size_t sk = fread(reserved2, 1, 2, mReader);
             assert(sk == 2);
 
@@ -333,42 +298,28 @@ void ExplicitVrReader::ReadDataset(std::list<DicomItem> &items, uint32_t depath)
                 size_t cpos = ftell(mReader);
                 if (((cpos + valueLength) > mDataLength)) {
 
-                    char tagError[] = "Offset:0x%04X,Dicom Tag:0x%04X,0x%04X, VR=%s, VL=0x%04X ,Outof FileLength:%d";
-                    char tagMessage[512 + 1] = {0};
-                    snprintf(tagMessage, 512, tagError, startPositon, groupId, elementId, vrstr.c_str(),valueLength,mDataLength);
-                    this->mHasError = true;
-                    this->mErrorMessage = (tagMessage);
-                    return;
-
-
+                    ValueLengthOutofRange(startPositon, groupId, elementId, vrstr, valueLength, mDataLength);
+                    break;
                 }
 
                 ptr.ReadData(mReader);
-
                 parseSubs(&ptr, subs);
 
             }
 
             items.push_back(ptr);
-
-
+            for (const auto &ci: subs) {
+                items.push_back(ci);
+            }
         }
-
-
-        for (const auto &ci: subs) {
-            items.push_back(ci);
-        }
-
-
     }
 
 
 }
 
 ExplicitVrReader::ExplicitVrReader(FILE *cin, tByteOrdering byteOrdering) : mReader(cin),
-                                                                            mHasError(false),
-                                                                            mByteOrdering(
-                                                                                    byteOrdering) {
+
+                                                                            mByteOrdering(byteOrdering) {
 
     assert(mReader != nullptr);
     fpos_t opx;
@@ -377,4 +328,5 @@ ExplicitVrReader::ExplicitVrReader(FILE *cin, tByteOrdering byteOrdering) : mRea
     mDataLength = ftell(mReader);
     fsetpos(mReader, &opx);
 }
+
 

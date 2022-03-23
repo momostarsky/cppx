@@ -9,8 +9,9 @@
 #include <list>
 #include "DicomItem.h"
 #include "Endian.h"
+#include "DicomStreamReader.h"
 
-class ImplicitVrReader {
+class ImplicitVrReader : public DicomStreamReader {
 public:
     explicit ImplicitVrReader(FILE *cin, tByteOrdering byteOrdering);
 
@@ -22,11 +23,8 @@ public:
 
     bool operator==(const ImplicitVrReader &) = delete;
 
-    void ReadDataset(std::list<DicomItem> &items, uint32_t depath = 1);
+    void ReadDataset(std::list<DicomItem> &items, uint32_t depath) override;
 
-    bool HasError() const { return mHasError; }
-
-    std::string ErrorMessage() const { return mErrorMessage; }
 
 protected:
 
@@ -39,10 +37,9 @@ protected:
 protected:
     FILE *mReader;
     size_t mDataLength;
-    bool mHasError;
-    std::string mErrorMessage;
 
-    tByteOrdering  mByteOrdering;
+
+    tByteOrdering mByteOrdering;
 };
 
 
