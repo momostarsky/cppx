@@ -355,6 +355,7 @@ set(CROSSPLATFORM_SRCS
         include/tinyxml2.cpp
         include/DicomStreamReader.h
         src/DicomStreamReader.cpp
+        include/DefaultTags.h
 
 
         )

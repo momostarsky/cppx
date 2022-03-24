@@ -169,42 +169,18 @@ void DataSet::ReadDataset(const uint32_t stopTag, bool expandTreeAsList) {
     } else {
         if (pWriter) {
             char tagFmt[] = "%s0x%04X,0x%04X, VL=%8d,Depth=%4d\n";
-            char tagStr[255] = {0};
+            char tagStr[256] = {0};
             for (const auto &it: dataSets) {
                 memset(tagStr, 0, 255);
                 std::string prefix((it.getDepth() - 1) * 2, '-');
 
-                snprintf(tagStr, 254, tagFmt, prefix.c_str(),
+                snprintf(tagStr, 255, tagFmt, prefix.c_str(),
                          it.getTag()->Group(), it.getTag()->Element(), it.getValueLength(), it.getDepth());
 
 #ifdef DEBUG
                 std::cout << tagStr;
 #endif
                 fwrite(tagStr, strlen(tagStr), 1, pWriter);
-
-                DicomVR cr = it.getVr();
-                if (cr == *pVR_AE
-                    || cr == *pVR_UI
-                    || cr == *pVR_CS
-                        ) {
-                    size_t rl = it.getValueLength();
-                    if (rl == 0) {
-                        continue;
-                    }
-                    char lst = it.getData()[rl];
-
-
-                    if (lst == '\0' || lst == 0x20) {
-                        rl = rl - 1;
-                    }
-                    std::string value;
-                    value.append(it.getData(), rl);
-
-                    const char *newLine = "\n";
-                    fwrite(newLine, 1, 1, pWriter);
-                    fwrite(value.c_str(), strlen(value.c_str()), 1, pWriter);
-                    fwrite(newLine, 1, 1, pWriter);
-                }
             }
         }
 

@@ -51,6 +51,8 @@ public:
 
     DicomTag operator=(const DicomTag &) = delete;
 
+    bool  operator==(const DicomTag& ) const;
+
 
     uint16_t Group() const { return mGroup; }
 
@@ -58,6 +60,12 @@ public:
 
     std::string Creator() const { return mCreator; }
 
+    /**!
+     * 是否奇数 （私有TAG）
+     * @return
+     *      true   私有TAG
+     *      false  非私有TAG
+     */
     bool IsOdd() const { return (mGroup & 1) == 1; }
 
     std::string toString() const;

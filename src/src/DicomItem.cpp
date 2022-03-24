@@ -66,15 +66,26 @@ std::string DicomItem::toString() {
 DicomItem::DicomItem(const DicomItem &other) :
 
         DicomItem(other.mTag->Group(), other.mTag->Element(),
-                  other.mVr, other.mValueLength, other.mDepth,
-                  other.mValueBuffer, other.mPtrParent) {
+                  other.mVr, 0, other.mDepth,
+                  nullptr, nullptr) {
     mParent = other.mParent;
+    mValueLength = 0;
+    delete[]mValueBuffer;
+    if (other.mValueLength > 0 && other.mValueLength != 0xFFFFFFFF && other.mValueBuffer != nullptr) {
+        mValueBuffer = new char[other.mValueLength];
+        mValueLength = other.mValueLength;
+        memcpy(mValueBuffer, other.mValueBuffer, other.mValueLength);
+    }
+
     if (!other.mSubs.empty()) {
+        for (const auto &ck: other.mSubs) {
 //        std::cout << "copy From :" << other.mSubs.size() << std::endl;
 //        for (const auto &co: other.mSubs) {
 //            mSubs.push_back(co);
 //        }
-        mSubs.insert(mSubs.begin(), other.mSubs.begin(), other.mSubs.end());
+            mSubs.insert(mSubs.begin(), other.mSubs.begin(), other.mSubs.end());
+        }
+
     }
 
 

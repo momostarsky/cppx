@@ -11,6 +11,7 @@
 #include "include/DicomDictionary.h"
 #include "include/DicomUID.h"
 #include "include/FileHelper.h"
+#include "include/DefaultTags.h"
 
 int main(int argc, char **argv) {
     const DicomDictionary *p = DicomDictionary::getDicomDictionary();
@@ -71,6 +72,8 @@ int main(int argc, char **argv) {
         if(ds.HasError()){
            std::cout <<ds.ErrorMessage() <<std::endl;
         }
+        DicomTag  ctagRows = DCM_Rows;
+        std::cout << "TagRow Exists:" << ds.tagExists(ctagRows) << std::endl;
 //        std::string uid;
 //        DicomTag tag(0x0008,0x0016);
 //        std::cout<<"Index Of is :" << ds.indexOf(tag) <<std::endl;
