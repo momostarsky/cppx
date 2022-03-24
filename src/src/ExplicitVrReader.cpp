@@ -5,6 +5,7 @@
 #include "../include/ExplicitVrReader.h"
 #include <iostream>
 #include <cassert>
+#include <algorithm>
 
 
 void
@@ -249,24 +250,45 @@ void ExplicitVrReader::ReadDataset(std::list<DicomItem> &items, uint32_t depath)
             VrNoneErrorMessage(startPositon, groupId, elementId, vrstr);
             break;
         }
+        //
+        //AE, AS, AT, CS, DA, DS, DT, FL, FD, IS, LO, LT, PN, SH, SL, SS, ST, TM, UI, UL and US
+        //
+
 
 
         if (DicomVR::ElementWithFixedFormat(*tagVr)) {
+
+            const char *fixedVr = "AE,AS,AT,CS,DA,DS,DT,FL,FD,IS,LO,LT,PN,SH,SL,SS,ST,TM,UI,UL,US";
+            std::string f1(fixedVr);
+            if (std::string::npos == f1.find(vrstr)) {
+
+                mHasError = true;
+                mErrorMessage = R""("for VRs of AE, AS, AT, CS, DA, DS, DT, FL, FD, IS, LO, LT, PN, SH, SL, SS, ST, TM, UI, UL and US
+                                    参考: https://dicom.nema.org/medical/dicom/current/output/html/part05.html#sect_7.1.2
+                                    #7.1.2 Data Element Structure with Explicit VR")"";
+                break;
+
+            }
+
             size_t vrx = fread(vl2, 1, 2, mReader);
             assert(vrx == 2);
             uint16_t shortLen = bytesto_int2(vl2);
+            shortLen = EndianConvert::adjustEndian(shortLen, mByteOrdering);
+            DicomItem ptr(groupId, elementId, *tagVr, shortLen, depath);
+//            if (valueLength == 0xFFFFFFFF) {
+//                mHasError= true;
+//                mErrorMessage=R""(for VRs of AE, AS, AT, CS, DA, DS, DT, FL, FD, IS, LO, LT, PN, SH, SL, SS, ST, TM, UI, UL and US
+//                                  the Value Length Field is the 16-bit unsigned integer following the two byte VR Field (Table 7.1-2).
+//                                  The value of the Value Length Field shall equal the length of the Value Field.
+//                                  参考: https://dicom.nema.org/medical/dicom/current/output/html/part05.html#sect_7.1.2
+//                                  )"";
+//                break;
+//            }
 
-            valueLength = EndianConvert::adjustEndian(shortLen, mByteOrdering);
-            DicomItem ptr(groupId, elementId, *tagVr, valueLength, depath);
-            if (valueLength == 0xFFFFFFFF) {
-                ValueLengthErrorMessage(startPositon, groupId, elementId, vrstr);
-                break;
-            }
-
-            if (valueLength > 0) {
+            if (shortLen > 0) {
                 size_t cpos = ftell(mReader);
-                if (((cpos + valueLength) > mDataLength)) {
-                    ValueLengthOutofRange(startPositon, groupId, elementId, vrstr, valueLength, mDataLength);
+                if (((cpos + shortLen) > mDataLength)) {
+                    ValueLengthOutofRange(startPositon, groupId, elementId, vrstr, shortLen, mDataLength);
                     return;
                 }
                 ptr.ReadData(mReader);
@@ -276,6 +298,10 @@ void ExplicitVrReader::ReadDataset(std::list<DicomItem> &items, uint32_t depath)
 
         }
         {
+
+            //SV, UC, UR, UV and UT
+
+
             std::list<DicomItem> subs;
             size_t sk = fread(reserved2, 1, 2, mReader);
             assert(sk == 2);
@@ -285,14 +311,30 @@ void ExplicitVrReader::ReadDataset(std::list<DicomItem> &items, uint32_t depath)
             valueLength = bytesto_int4(vl4);
             valueLength = EndianConvert::adjustEndian(valueLength, mByteOrdering);
 
+            std::string vrNotUndefinedLength = "SV, UC, UR, UV, UT";
+            if (valueLength == 0xFFFFFFFF && vrNotUndefinedLength.find(vrstr) != std::string::npos) {
+                mHasError = true;
+                mErrorMessage = R""(VRs of SV, UC, UR, UV and UT may not have an Undefined Length
+                                参考: https://dicom.nema.org/medical/dicom/current/output/html/part05.html#sect_7.1.2
+                                #7.1.2 Data Element Structure with Explicit VR)"";
+
+                break;
+            }
+            std::string sqVrstr = "OB, OD, OF, OL, OV, OW, SQ, UN";
+
+            if (valueLength == 0xFFFFFFFF && sqVrstr.find(vrstr) == std::string::npos) {
+                mHasError = true;
+                mErrorMessage = R""(for VRs of OB, OD, OF, OL, OV, OW, SQ and UN, if the Value Field has an Explicit Length,
+                    then the Value Length Field shall contain a value equal to the length (in bytes) of the Value Field, otherwise,
+                    the Value Field has an Undefined Length and a Sequence Delimitation Item marks the end of the Value Field.)"";
+                break;
+            }
+
             DicomItem ptr(groupId, elementId, *tagVr, valueLength, depath);
 
             if (valueLength == 0xFFFFFFFF) {
-
                 //Value Field has an Undefined Length and a Sequence Delimitation Item marks the end of the Value Field.
                 parseSQ(mReader, &ptr, subs);
-
-
             } else if (valueLength > 0) {
 
                 size_t cpos = ftell(mReader);
