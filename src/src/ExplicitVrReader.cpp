@@ -239,6 +239,9 @@ void ExplicitVrReader::ReadDataset(std::list<DicomItem> &items, uint32_t depath)
 
 
         const DicomVR *tagVr = DicomVR::ParseVR(vrstr);
+        if (elementId == 0x0000) {
+            tagVr = pVR_UL;
+        }
         if (tagVr == pVR_NONE) {
             //---回退6个字节
             fseek(mReader, -6, SEEK_CUR);

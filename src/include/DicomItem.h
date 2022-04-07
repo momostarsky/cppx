@@ -37,10 +37,14 @@ public:
         return mValueLength;
     }
 
-    void setValueLength(uint32_t valueLength)  ;
+    void setValueLength(uint32_t valueLength);
 
     DicomVR getVr() const {
         return mVr;
+    }
+
+    void SetVr(const DicomVR &vr) {
+        mVr = vr;
     }
 
     const char *getData() const {

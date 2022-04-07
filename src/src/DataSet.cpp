@@ -146,15 +146,17 @@ void DataSet::ReadDataset(const uint32_t stopTag, bool expandTreeAsList) {
               << (mTransferSyntax.Endian == tByteOrdering::lowByteEndian ? "littleEndian" : "bigEndian") << std::endl;
 
     DicomStreamReader *dicomReader = nullptr;
+    bool explicitVr = false;
     if (mTransferSyntax.IsExplicitVR) {
         dicomReader = new ExplicitVrReader(pReader, mTransferSyntax.Endian);
-
+        explicitVr = true;
 
     } else {
         dicomReader = new ImplicitVrReader(pReader, mTransferSyntax.Endian);
 
 
     }
+
     dicomReader->ReadDataset(dataSets, 1);
     if (dicomReader->HasError()) {
         this->mHasError = true;
@@ -167,15 +169,39 @@ void DataSet::ReadDataset(const uint32_t stopTag, bool expandTreeAsList) {
         }
 
     } else {
+        std::cout << "typeid:" << typeid(*dicomReader).name() << std::endl;
+
+
+        DicomDictionary *p = DicomDictionary::getDicomDictionary();
+
         if (pWriter) {
-            char tagFmt[] = "%s0x%04X,0x%04X, VL=%8d,Depth=%4d\n";
+            char tagFmt[] = "%s0x%04X,0x%04X,VR=%s, VL=%8d,Depth=%4d\n";
             char tagStr[256] = {0};
             for (const auto &it: dataSets) {
                 memset(tagStr, 0, 255);
                 std::string prefix((it.getDepth() - 1) * 2, '-');
 
-                snprintf(tagStr, 255, tagFmt, prefix.c_str(),
-                         it.getTag()->Group(), it.getTag()->Element(), it.getValueLength(), it.getDepth());
+
+
+                if (explicitVr) {
+                    snprintf(tagStr, 255, tagFmt, prefix.c_str(),
+                             it.getTag()->Group(), it.getTag()->Element(), it.getVr().Code.c_str(), it.getValueLength(),
+                             it.getDepth());
+                } else {
+                    tagDescription_t tags = p->getTagDescriptions(it.getTag()->Group(), it.getTag()->Element());
+                    if (tags.m_vr0) {
+                        snprintf(tagStr, 255, tagFmt, prefix.c_str(),
+                                 it.getTag()->Group(), it.getTag()->Element(), tags.m_vr0->Code.c_str(),
+                                 it.getValueLength(), it.getDepth());
+
+                    } else {
+                        snprintf(tagStr, 255, tagFmt, prefix.c_str(),
+                                 it.getTag()->Group(), it.getTag()->Element(), "Unknown",
+                                 it.getValueLength(), it.getDepth());
+                    }
+
+                }
+
 
 #ifdef DEBUG
                 std::cout << tagStr;
@@ -188,19 +214,6 @@ void DataSet::ReadDataset(const uint32_t stopTag, bool expandTreeAsList) {
 
     delete dicomReader;
 
-
-//    std::copy(items.begin(), items.end(),  std::back_inserter(this->dataSets));
-//
-//    std::list<DicomItem>().swap(items);
-
-//    for (auto &cv: items) {
-//        flat(cv, this->dataSets, true, -1);
-//    }
-//    if (expandTreeAsList) {
-//        for (auto &cv: this->dataSets) {
-//            cv.ClearSubs();
-//        }
-//    }
 }
 
 bool DataSet::tagExists(const DicomTag &key) {
