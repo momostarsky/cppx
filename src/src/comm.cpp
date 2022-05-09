@@ -5,42 +5,47 @@
 #include <regex>
 #include "../include/comm.h"
 
-const char * const DicomVR_AE = "AE";
-const char * const DicomVR_AS = "AS";
-const char * const DicomVR_AT = "AT";
-const char * const DicomVR_CS = "CS";
-const char * const DicomVR_DA = "DA";
-const char * const DicomVR_DS = "DS";
-const char * const DicomVR_DT = "DT";
-const char * const DicomVR_FD = "FD";
-const char * const DicomVR_FL = "FL";
-const char * const DicomVR_IS = "IS";
-const char * const DicomVR_LO = "LO";
-const char * const DicomVR_LT = "LT";
-const char * const DicomVR_OB = "OB";
-const char * const DicomVR_OD = "OD";
-const char * const DicomVR_OF = "OF";
-const char * const DicomVR_OL = "OL";
-const char * const DicomVR_OV = "OV";
-const char * const DicomVR_OW = "OW";
-const char * const DicomVR_PN = "PN";
-const char * const DicomVR_SH = "SH";
-const char * const DicomVR_SL = "SL";
-const char * const DicomVR_SQ = "SQ";
-const char * const DicomVR_SS = "SS";
-const char * const DicomVR_ST = "ST";
-const char * const DicomVR_SV = "SV";
-const char * const DicomVR_TM = "TM";
-const char * const DicomVR_UC = "UC";
-const char * const DicomVR_UI = "UI";
-const char * const DicomVR_UL = "UL";
-const char * const DicomVR_UN = "UN";
-const char * const DicomVR_UR = "UR";
-const char * const DicomVR_US = "US";
-const char * const DicomVR_UT = "UT";
-const char * const DicomVR_UV = "UV";
-const char * const DicomVR_NONE = "NONE";
+const char *const DicomVR_AE = "AE";
+const char *const DicomVR_AS = "AS";
+const char *const DicomVR_AT = "AT";
+const char *const DicomVR_CS = "CS";
+const char *const DicomVR_DA = "DA";
+const char *const DicomVR_DS = "DS";
+const char *const DicomVR_DT = "DT";
+const char *const DicomVR_FD = "FD";
+const char *const DicomVR_FL = "FL";
+const char *const DicomVR_IS = "IS";
+const char *const DicomVR_LO = "LO";
+const char *const DicomVR_LT = "LT";
+const char *const DicomVR_OB = "OB";
+const char *const DicomVR_OD = "OD";
+const char *const DicomVR_OF = "OF";
+const char *const DicomVR_OL = "OL";
+const char *const DicomVR_OV = "OV";
+const char *const DicomVR_OW = "OW";
+const char *const DicomVR_PN = "PN";
+const char *const DicomVR_SH = "SH";
+const char *const DicomVR_SL = "SL";
+const char *const DicomVR_SQ = "SQ";
+const char *const DicomVR_SS = "SS";
+const char *const DicomVR_ST = "ST";
+const char *const DicomVR_SV = "SV";
+const char *const DicomVR_TM = "TM";
+const char *const DicomVR_UC = "UC";
+const char *const DicomVR_UI = "UI";
+const char *const DicomVR_UL = "UL";
+const char *const DicomVR_UN = "UN";
+const char *const DicomVR_UR = "UR";
+const char *const DicomVR_US = "US";
+const char *const DicomVR_UT = "UT";
+const char *const DicomVR_UV = "UV";
+const char *const DicomVR_NONE = "NONE";
 
+/**!
+ * 移出字符串首尾空字符,不改变原始字符串。
+ * @param strBase  源字符串
+ * @param strDest  结果字符串
+ */
 void StringTrimStartEnd(std::string &strBase, std::string &strDest) {
 
     std::regex reg("(^\\s*)|(\\s*$)");
@@ -49,6 +54,12 @@ void StringTrimStartEnd(std::string &strBase, std::string &strDest) {
 
 }
 
+/**!
+ * 字符串替换
+ * @param strBase  源字符串
+ * @param strSrc   要替换的字符串
+ * @param strDes   替换后的内容
+ */
 void StringReplace(std::string &strBase, const std::string &strSrc, const std::string &strDes) {
     //参数1：待修改的字符串；参数2：要替换的内容；参数3：替换后的内容，比如把AA替换成BB，这里要填的是BB
     //替换完后会返回给原字符串变量也就是strBase。
@@ -62,7 +73,12 @@ void StringReplace(std::string &strBase, const std::string &strSrc, const std::s
     }
 }
 
-
+/**!
+ * 字符串分割
+ * @param src 源字符串
+ * @param separators  分隔符
+ * @param dest   结果存放列表
+ */
 void Split(const std::string &src, const std::vector<std::string> &separators, std::vector<std::string> &dest) {
     std::string _sep = "$";
     std::string txt(src);
@@ -108,8 +124,13 @@ void Split(const std::string &src, const std::vector<std::string> &separators, s
 
 }
 
+/**!
+ * uint32 转换为4个字节数组
+ * @param num
+ * @param bytes
+ */
 
-void int4to_bytes(uint32_t num, char bytes[4] /*in array size must be 4*/) {
+__attribute__((unused)) void int4to_bytes(uint32_t num, char bytes[4] /*in array size must be 4*/) {
     //turn integer to bytes array
     bytes[0] = (char) num;
     bytes[1] = (char) (num >> 8);
@@ -117,7 +138,12 @@ void int4to_bytes(uint32_t num, char bytes[4] /*in array size must be 4*/) {
     bytes[3] = (char) (num >> 24);
 }
 
-
+/**!
+ * 4 字节数组转换为 uint32
+ * @param bytes
+ * @return
+ */
+__attribute__((unused))
 uint32_t bytesto_int4(const char bytes[4]) {
     //https://blog.csdn.net/weixin_40583386/article/details/86152852
     //turn bytes array to integer

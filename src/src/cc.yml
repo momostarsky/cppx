@@ -1,0 +1,25 @@
+- hosts: k8s
+  gather_facts: no
+
+  tasks:
+    - name:  fetch copy  #从各宿主机将公钥拷贝到本机
+      fetch: src=~/.ssh/id_rsa.pub  dest=~/nodessh/
+
+    - name:  megere
+      local_action: shell  find    ~/nodessh/ -name 'id_rsa.pub' -exec sh -c 'cat {}>>~/authorized_keys.log' \;
+
+    - name: copy authorized_keys  #将合成的公钥进行分发
+      copy: src=~/authorized_keys.log dest=~/.ssh/authorized_keys mode=0600
+      tags:
+        - install ssh
+
+
+  # - name:  append file authorized_keys.log  #将各个公钥合并成一个文件
+  #   local_action:  find ~/nodessh/ -name 'id_rsa.pub' -type f -exec sh -c 'cat {}>>~/authorized_keys.log' \;
+  #   run_once: true
+
+  # - name: Gather from host to local
+  #   delegate_to: 127.0.0.1
+  #   run_once: true
+  #   become: false
+  #   shell: "scp -r root@{{groups['profiling_server'][0]}}:{{results_root_dir}} ./results_local_location "

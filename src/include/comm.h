@@ -86,7 +86,7 @@ void StringTrimStartEnd(std::string &strBase, std::string &strDest);
 void Split(const std::string &src, const std::vector<std::string> &separators, std::vector<std::string> &dest);
 
 
-void int4to_bytes(uint32_t num, char bytes[4] /*in array size must be 4*/);///NOLINT
+__attribute__((unused)) void int4to_bytes(uint32_t num, char bytes[4] /*in array size must be 4*/);///NOLINT
 
 uint32_t bytesto_int4(const char bytes[4]);
 
