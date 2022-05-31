@@ -5,6 +5,7 @@
 #include "../include/FileHelper.h"
 #include <sys/stat.h>
 
+
 /*!
  * 遍历指定目录下的文件
  * @param filename
@@ -13,7 +14,8 @@
 void FileHelper::enum_files(const char *dirpath, std::list<std::string> &files) {
     std::list<std::string> alldirs;
     alldirs.emplace_back(dirpath);
-    char filepath[1025] = {0};
+    const uint32_t max_file_length = 2049;
+    char filepath[max_file_length] = {0};
     while (!alldirs.empty()) {
 
         auto Iter_S = alldirs.begin();
@@ -31,15 +33,13 @@ void FileHelper::enum_files(const char *dirpath, std::list<std::string> &files) 
                     ) {
                 continue;
             }
-            memset(filepath, 0, 1025);
-            snprintf(filepath, 1024, "%s/%s", cdirname.c_str(), ent->d_name);
+            memset(filepath, 0, max_file_length);
+            snprintf(filepath, max_file_length - 1, "%s/%s", cdirname.c_str(), ent->d_name);
             struct stat fstate{0};
             stat(filepath, &fstate);
             if (S_ISDIR(fstate.st_mode)) {
-
                 alldirs.emplace_back(filepath);
             } else {
-
                 files.emplace_back(filepath);
             }
         }
